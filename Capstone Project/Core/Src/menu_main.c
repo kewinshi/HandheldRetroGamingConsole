@@ -20,7 +20,10 @@ void displayMenu() {
 			input = get_input();
 			HAL_Delay(50);
 		}
-
+		if (input == 1) {
+			play_snake();
+			break;
+		}
 		if (input == 2) { // up logic
 			if (game_choice != 0) {
 				game_choice = (game_choice - 1) % 2;

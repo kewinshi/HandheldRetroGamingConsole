@@ -123,22 +123,18 @@ int main(void)
 	LCD_Drawpixel(169,0, RED);
 	LCD_Drawpixel(0, 319, BLUE);
 	LCD_Drawpixel(169,319, GREEN);
-	HAL_Delay(100);
-	play_snake();
-	displayMenu();
-	HAL_Delay(200);
 
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+	/* USER CODE BEGIN WHILE */
 	while (1) {
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
+		/* USER CODE END WHILE */
+		displayMenu();
+		/* USER CODE BEGIN 3 */
 	}
-  /* USER CODE END 3 */
+	/* USER CODE END 3 */
 }
 
 /**
