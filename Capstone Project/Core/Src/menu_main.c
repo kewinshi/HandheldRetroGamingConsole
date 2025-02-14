@@ -12,7 +12,7 @@ void displayMenu() {
 	LCD_DrawString(50, 6 * line_height, "Select game", WHITE, BLACK, 2);
 	LCD_DrawString(50, 7 * line_height, "Snake", WHITE, BLACK, 2);
 	LCD_DrawString(50, 8 * line_height, "Pacman", WHITE, BLACK, 2);
-	LCD_DrawString(50, 9 * line_height, "Tetris #", WHITE, BLACK, 2);
+	LCD_DrawString(50, 9 * line_height, "Tetris", WHITE, BLACK, 2);
 	int input = -1;
 	int game_choice = 0;
 	while (1) {
@@ -22,6 +22,9 @@ void displayMenu() {
 		}
 		if (input == 1) {
 			play_snake();
+			break;
+		} else if (input == 2) {
+			play_tetris();
 			break;
 		}
 		if (input == 2) { // up logic
@@ -35,16 +38,16 @@ void displayMenu() {
 		}
 
 		if (game_choice == 0) {
-			LCD_DrawString(140, 7 * line_height, " >", WHITE, BLACK, 2);
+			LCD_DrawString(140, 7 * line_height, " <", WHITE, BLACK, 2);
 			clear_area(140, 8 * line_height, 170, 200, BLACK);
 			print("0");
 		} else if (game_choice == 1) {
-			LCD_DrawString(140, 8 * line_height, " >", WHITE, BLACK, 2);
+			LCD_DrawString(140, 8 * line_height, " <", WHITE, BLACK, 2);
 			clear_area(140, 7 * line_height, 170, 8 * line_height - 1, BLACK);
 			clear_area(140, 9 * line_height, 170, 10 * line_height - 1, BLACK);
 			print("1");
 		} else if (game_choice == 2) {
-			LCD_DrawString(140, 9 * line_height, " >", WHITE, BLACK, 2);
+			LCD_DrawString(140, 9 * line_height, " <", WHITE, BLACK, 2);
 			clear_area(140, 7 * line_height, 170, 9 * line_height - 1, BLACK);
 			print("2");
 		}

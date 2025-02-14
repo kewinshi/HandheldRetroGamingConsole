@@ -15,9 +15,6 @@ int top_length = 0;
 
 void play_snake() {
     draw_snake_map();
-    HAL_Delay(100);
-
-    srand(time(NULL));
     int input = 3;
     int xdir = 1;  // initial direction: right
     int ydir = 0;

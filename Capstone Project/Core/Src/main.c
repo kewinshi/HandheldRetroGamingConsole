@@ -115,6 +115,8 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 //	HAL_Delay(100);
+  // Initialize random seed only once
+	srand(time(NULL));
 	LCD_Init();
 	LCD_Clear(GREEN);
 	HAL_Delay(1000);
@@ -123,6 +125,7 @@ int main(void)
 	LCD_Drawpixel(169,0, RED);
 	LCD_Drawpixel(0, 319, BLUE);
 	LCD_Drawpixel(169,319, GREEN);
+	play_tetris();
 
 
   /* USER CODE END 2 */

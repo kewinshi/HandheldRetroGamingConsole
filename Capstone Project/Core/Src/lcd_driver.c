@@ -157,8 +157,18 @@ uint8_t font_x[7] = {0b00000,0b10001,0b01010,0b00100,0b01010,0b10001,0b00000};
 uint8_t font_y[7] = {0b00000,0b10001,0b10001,0b01111,0b00001,0b01110,0b00000};
 uint8_t font_z[7] = {0b00000,0b11111,0b00010,0b00100,0b01000,0b11111,0b00000};
 
-// Character '>'
-uint8_t font_greater_than[7] = {0b10000,0b01000,0b00100,0b00010,0b00100,0b01000,0b10000};
+// Character '<' as a left-pointing arrow:
+uint8_t font_less_than[7] = {
+    0b00001,
+    0b00010,
+    0b00100,
+    0b01000,
+    0b00100,
+    0b00010,
+    0b00001
+};
+
+
 
 // Uppercase letters A-Z
 uint8_t font_A[7] = {0b01110,0b10001,0b10001,0b11111,0b10001,0b10001,0b00000};
@@ -204,7 +214,7 @@ const uint8_t* font_data[54] = {
     font_A, font_B, font_C, font_D, font_E, font_F, font_G, font_H, font_I, font_J,
     font_K, font_L, font_M, font_N, font_O, font_P, font_Q, font_R, font_S, font_T,
     font_U, font_V, font_W, font_X, font_Y, font_Z,
-    font_greater_than, font_block
+    font_less_than, font_block
 };
 
 //---------------------
@@ -231,13 +241,13 @@ const uint8_t* font_digits[10] = {
 //------------------------------------------------------------------------------
 
 // Draw a single character at (x, y) with foreground (color) and background (bgcolor) colors,
-// scaled by 'scale'. Supports digits (0-9), letters (A-Z, a-z), and special characters '>' and '#'.
+// scaled by 'scale'. Supports digits (0-9), letters (A-Z, a-z), and special characters '<' and '#'.
 void LCD_DrawChar(uint16_t x, uint16_t y, char c, uint16_t color, uint16_t bgcolor, uint8_t scale) {
     // Check if character is supported
     if (!((c >= '0' && c <= '9') ||
           (c >= 'A' && c <= 'Z') ||
           (c >= 'a' && c <= 'z') ||
-          (c == '>') ||
+          (c == '<') ||
           (c == '#'))) {
         return; // Unsupported character, do nothing
     }
@@ -249,7 +259,7 @@ void LCD_DrawChar(uint16_t x, uint16_t y, char c, uint16_t color, uint16_t bgcol
         char_data = font_data[c - 'a']; // Lowercase letters: indices 0–25
     } else if (c >= 'A' && c <= 'Z') {
         char_data = font_data[c - 'A' + 26]; // Uppercase letters: indices 26–51
-    } else if (c == '>') {
+    } else if (c == '<') {
         char_data = font_data[52];
     } else if (c == '#') {
         char_data = font_data[53];
@@ -315,6 +325,34 @@ void DrawWall(uint16_t x, uint16_t y, uint16_t color) {
         }
     }
 }
+
+// Draw a 5x5 wall (filled rectangle) starting at (x, y).
+void DrawWall5(uint16_t x, uint16_t y, uint16_t color) {
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            LCD_Drawpixel(x + j, y + i, color);
+        }
+    }
+}
+
+// Draw a 14×14 filled rectangle (used for Tetris blocks)
+void DrawTetrisBlock(uint16_t x, uint16_t y, uint16_t color) {
+    // Set borderColor based on the color value:
+    uint16_t borderColor = (color == BLACK) ? BLACK : WHITE;
+
+    for (int i = 0; i < 14; i++) {
+        for (int j = 0; j < 14; j++) {
+            if (i == 0 || i == 13 || j == 0 || j == 13) {
+                LCD_Drawpixel(x + j, y + i, borderColor);
+            } else {
+                LCD_Drawpixel(x + j, y + i, color);
+            }
+        }
+    }
+}
+
+
+
 
 // Draw a snake body segment as a filled circle (radius 5).
 void DrawSnakeBody(uint16_t cx, uint16_t cy, uint16_t color) {

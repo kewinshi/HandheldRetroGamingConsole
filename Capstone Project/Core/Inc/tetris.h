@@ -17,11 +17,13 @@ typedef struct {
     int rotation;     // Rotation state (0-3)
 } Tetrimino;
 
-// Global Tetris grid
+// Local Vars
 extern char tetris_grid[TETRIS_ROWS][TETRIS_COLS];
+static int hard_drop_used = 0;
 
 // Function declarations
 void play_tetris();
+void draw_tetris_map();
 void draw_tetris_grid();
 void place_tetrimino(Tetrimino *piece);
 int check_collision(Tetrimino *piece);
