@@ -39,6 +39,7 @@ volatile int hard_drop_used = 0;
 
 /* Global score variable */
 static uint32_t score = 0U;
+static uint32_t top_score = 0U;
 
 /* Tetrimino structure is defined in tetris.h */
 
@@ -285,24 +286,17 @@ void draw_tetris_map(void)
     }
 }
 
-/*
- * Stub for LCD_FillRect.
- * If your LCD driver already implements LCD_FillRect, remove this stub.
- */
-void LCD_FillRect(int x, int y, int width, int height, uint16_t color)
-{
-    /* Implementation-specific: Draw a filled rectangle at (x,y) with the specified width, height, and color.
-       For example, you might call a lower-level graphics routine here. */
-}
 
 /*
  * DrawSmallBlock
  *
  * Draws a small block (7x7 pixels) at the given coordinates.
  */
-static void DrawSmallBlock(int x, int y, uint16_t color)
-{
-    LCD_FillRect(x, y, 7, 7, color);
+static void DrawSmallBlock(int x, int y, uint16_t color) {
+
+	clear_area((uint16_t) x, (uint16_t) y, (uint16_t) (x + 7 - 1),
+			(uint16_t) (y + 7 - 1), color);
+
 }
 
 /*
@@ -315,27 +309,29 @@ static void update_status_display(const Tetrimino *next_piece)
 {
     char scoreStr[32];
     /* Display score */
-    sprintf(scoreStr, "Score: %lu", (unsigned long)score);
-    LCD_DrawString(5, 285, scoreStr, WHITE, GREY, 1);
+    sprintf(scoreStr, "Score %lu", (unsigned long)score);
+    LCD_DrawString(40, 295, scoreStr, WHITE, GREY, 1);
 
     /* Display label "Next:" */
-    LCD_DrawString(100, 285, "Next:", WHITE, GREY, 1);
+    LCD_DrawString(100, 295, "Next:", WHITE, GREY, 1);
 
-    /* Draw the next piece preview in a 4x4 grid starting at (100,300) */
+    /* Draw the next piece preview in a 4x4 grid starting at (100,285) */
     for (int m = 0; m < 4; m++)
     {
         for (int n = 0; n < 4; n++)
         {
-            int x = 100 + n * 8;  /* 8-pixel spacing */
-            int y = 300 + m * 8;
+            int x = 140 + n * 8;  /* 8-pixel spacing */
+            int y = 285 + m * 8;
             if (shapes[next_piece->shape][next_piece->rotation][m][n] != 0)
             {
                 DrawSmallBlock(x, y, RED);
             }
             else
             {
-                LCD_FillRect(x, y, 7, 7, BLACK);
+                /* Clear the area from (x, y) to (x+6, y+6) */
+                clear_area((uint16_t)x, (uint16_t)y, (uint16_t)(x + 7 - 1), (uint16_t)(y + 7 - 1), GREY);
             }
+
         }
     }
 }
@@ -479,13 +475,21 @@ static int is_game_over(void)
  */
 static void handle_game_over(void)
 {
+	LCD_Clear(BLACK);
+	if (score > top_score) {
+		LCD_DrawString(50, 2 * 20, "High Score!", BLACK, RED, 3);
+		top_score = score;
+	}
     char gameOverStr[10];
     char scoreStr[20];
+    char topScoreStr[20];
     LCD_Clear(BLACK);
 
     sprintf(scoreStr, "Score: %lu", (unsigned long)score);
+    sprintf(topScoreStr, "High Score: %lu", (unsigned long)top_score);
     LCD_DrawString(50, 3 * 20, "Game Over.", WHITE, BLACK, 2.5);
     LCD_DrawString(50, 5 * 20, scoreStr, WHITE, BLACK, 2.5);
+    LCD_DrawString(50, 7 * 20, topScoreStr, WHITE, BLACK, 2.5);
     while (get_input() == INVALID_INPUT)
     {
         HAL_Delay(100);

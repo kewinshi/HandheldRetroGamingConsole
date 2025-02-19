@@ -8,11 +8,11 @@ void displayMenu() {
 	LCD_Clear(BLACK);  // Clear the screen
 
 	// Always display the header
-	LCD_DrawString(50, 3 * line_height, "Welcome", WHITE, BLACK, 3);
-	LCD_DrawString(50, 6 * line_height, "Select game", WHITE, BLACK, 2);
-	LCD_DrawString(50, 7 * line_height, "Snake", WHITE, BLACK, 2);
-	LCD_DrawString(50, 8 * line_height, "Pacman", WHITE, BLACK, 2);
-	LCD_DrawString(50, 9 * line_height, "Tetris", WHITE, BLACK, 2);
+	LCD_DrawString(50, 3 * line_height, "Welcome", BLUE, BLACK, 3);
+	LCD_DrawString(50, 6 * line_height, "Select game", GREY, BLACK, 2);
+	LCD_DrawString(50, 7 * line_height, "Snake", GREEN, BLACK, 2);
+	LCD_DrawString(50, 8 * line_height, "Pacman", YELLOW, BLACK, 2);
+	LCD_DrawString(50, 9 * line_height, "Tetris", RED, BLACK, 2);
 	int input = -1;
 	int game_choice = 0;
 	while (1) {
@@ -32,7 +32,7 @@ void displayMenu() {
 				game_choice = (game_choice - 1) % 2;
 			} else {
 				game_choice = 2;
-			} q
+			}
 		} else if (input == 5) { // down logic
 			game_choice = (game_choice + 1) % 3;
 		}

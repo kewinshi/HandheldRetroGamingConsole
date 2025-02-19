@@ -79,9 +79,10 @@ void play_snake() {
         // Move the snake; if move_snake returns 0, game over.
         if (!move_snake(xdir, ydir, &apple_x, &apple_y)) {
             // Optionally, draw a "Game Over" message here.
+        	LCD_Clear(BLACK);
         	if (snake_length > top_length) {
         		top_length = snake_length;
-        		LCD_DrawString(50, 3 * 20, "HIGH SCORE!", WHITE, BLACK, 2.5);
+        		LCD_DrawString(50, 3 * 20, "HIGH SCORE!", RED, BLACK, 2.5);
         	} else {
         		LCD_DrawString(50, 3 * 20, "Game Over.", WHITE, BLACK, 2.5);
         	}

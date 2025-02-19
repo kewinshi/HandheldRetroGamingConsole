@@ -125,7 +125,7 @@ int main(void)
 	LCD_Drawpixel(169,0, RED);
 	LCD_Drawpixel(0, 319, BLUE);
 	LCD_Drawpixel(169,319, GREEN);
-	play_tetris();
+//	play_tetris();
 
 
   /* USER CODE END 2 */
