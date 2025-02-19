@@ -1,37 +1,85 @@
 #ifndef TETRIS_H
 #define TETRIS_H
 
-#include "main.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-// Tetris grid dimensions
-#define TETRIS_ROWS 20
-#define TETRIS_COLS 10
+#include <stdint.h>
 
-// Tetris shapes
-extern int shapes[7][4][4][4];  // Shapes array with rotations
+/* Global Tetris grid dimensions (adjust if needed) */
+#ifndef TETRIS_ROWS
+#define TETRIS_ROWS 20U
+#endif
 
-// Struct to represent a Tetrimino
-typedef struct {
-    int x, y;         // Position of the Tetrimino
-    int shape;        // Shape index (0-6 for different pieces)
-    int rotation;     // Rotation state (0-3)
+#ifndef TETRIS_COLS
+#define TETRIS_COLS 10U
+#endif
+
+/* Tetrimino structure definition */
+typedef struct
+{
+    int x;        /* Horizontal position in the grid */
+    int y;        /* Vertical position in the grid */
+    int shape;    /* Index for the shape (0-6) */
+    int rotation; /* Rotation state (0-3) */
 } Tetrimino;
 
-// Local Vars
-extern char tetris_grid[TETRIS_ROWS][TETRIS_COLS];
-static int hard_drop_used = 0;
+/* Global variable to track if a hard drop has been used */
+extern volatile int hard_drop_used;
+//static uint32_t score = 0U;
 
-// Function declarations
-void play_tetris();
-void draw_tetris_map();
-void draw_tetris_grid();
-void place_tetrimino(Tetrimino *piece);
+/* Function Prototypes */
+
+/**
+ * @brief Draws the static parts of the Tetris display (borders, etc.).
+ */
+void draw_tetris_map(void);
+
+/**
+ * @brief Contains the main game loop for the Tetris game.
+ */
+void play_tetris(void);
+
+/**
+ * @brief Checks whether the provided Tetrimino collides with boundaries or locked pieces.
+ *
+ * @param piece Pointer to the Tetrimino to check.
+ * @return int Returns 1 if a collision is detected, 0 otherwise.
+ */
 int check_collision(Tetrimino *piece);
+
+/**
+ * @brief Locks the current Tetrimino into the grid.
+ *
+ * @param piece Pointer to the Tetrimino to lock.
+ */
 void lock_piece(Tetrimino *piece);
-void clear_lines();
-void print_shape(int shape_index, int rotate_index);
+
+/**
+ * @brief Moves the current Tetrimino horizontally.
+ *
+ * @param piece Pointer to the Tetrimino.
+ * @param dx Horizontal displacement (-1 for left, 1 for right).
+ */
 void move_piece(Tetrimino *piece, int dx);
+
+/**
+ * @brief Rotates the current Tetrimino clockwise.
+ *
+ * @param piece Pointer to the Tetrimino.
+ */
 void rotate_piece(Tetrimino *piece);
+
+/**
+ * @brief Performs a hard drop on the current Tetrimino (moves it downward instantly).
+ *
+ * @param piece Pointer to the Tetrimino.
+ */
 void hard_drop(Tetrimino *piece);
 
-#endif // TETRIS_H
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* TETRIS_H */

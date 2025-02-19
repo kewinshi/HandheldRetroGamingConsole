@@ -20,10 +20,10 @@ void displayMenu() {
 			input = get_input();
 			HAL_Delay(50);
 		}
-		if (input == 1) {
+		if (input == 1 && game_choice == 0) {
 			play_snake();
 			break;
-		} else if (input == 2) {
+		} else if (input == 1 && game_choice == 2) {
 			play_tetris();
 			break;
 		}
@@ -32,7 +32,7 @@ void displayMenu() {
 				game_choice = (game_choice - 1) % 2;
 			} else {
 				game_choice = 2;
-			}
+			} q
 		} else if (input == 5) { // down logic
 			game_choice = (game_choice + 1) % 3;
 		}

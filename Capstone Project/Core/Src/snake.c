@@ -13,6 +13,8 @@ Point snake_body[MAX_SNAKE_LENGTH];
 int snake_length = 0;
 int top_length = 0;
 
+#define INVALID_INPUT    (-1)
+
 void play_snake() {
     draw_snake_map();
     int input = 3;
@@ -85,10 +87,15 @@ void play_snake() {
         	}
 
         	char score_str[20];
-        	sprintf(score_str, "Score:%d", snake_length);
-        	LCD_DrawString(50, 5 * 20, score_str, WHITE, BLACK, 2);
-        	HAL_Delay(3000);
-            break;
+        	char top_score_str[20];
+        	sprintf(top_score_str, "High Score:%d", top_length);
+			sprintf(score_str, "Score:%d", snake_length);
+			LCD_DrawString(50, 5 * 20, score_str, WHITE, BLACK, 2);
+			LCD_DrawString(50, 7 * 20, top_score_str, WHITE, BLACK, 2);
+			while (get_input() == INVALID_INPUT) {
+				HAL_Delay(100);
+			}
+			break;
         }
     }
 }

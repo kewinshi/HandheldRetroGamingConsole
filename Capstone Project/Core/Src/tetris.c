@@ -1,3 +1,17 @@
+/******************************************************************************
+ * Tetris Game - MISRA C Refactored Version
+ *
+ * This code includes:
+ *   - Global Tetris grid and Tetrimino shape definitions.
+ *   - Helper functions to draw the game map.
+ *   - A MISRA-refactored main game loop (play_tetris()).
+ *   - Collision checking, locking, movement, rotation, and hard drop functions.
+ *   - Score and next piece status display.
+ *
+ * Adjust the include paths and macros as needed for your target platform.
+ ******************************************************************************/
+
+
 #include "tetris.h"
 #include "lcd_driver.h"
 #include "lcd_config.h"
@@ -5,402 +19,736 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>  /* For sprintf() */
 
-// Global Tetris grid: 0 = empty, 1 = locked block
+/* If not defined in "tetris.h", define grid dimensions here */
+#ifndef TETRIS_ROWS
+#define TETRIS_ROWS 20U
+#endif
+
+#ifndef TETRIS_COLS
+#define TETRIS_COLS 10U
+#endif
+
+/* Global Tetris grid: 0 = empty, 1 = locked block */
 char tetris_grid[TETRIS_ROWS][TETRIS_COLS] = {0};
 
-// Tetris shapes (7 pieces, 4 rotations, each 4x4)
-// (These definitions are the same as your original code.)
-int shapes[7][4][4][4] = {
-    // O Tetromino
+/* Global flag to mark if a hard drop has been used for the current piece */
+volatile int hard_drop_used = 0;
+
+/* Global score variable */
+static uint32_t score = 0U;
+
+/* Tetrimino structure is defined in tetris.h */
+
+/* Tetris shapes (7 pieces, 4 rotations, each 4x4) */
+int shapes[7][4][4][4] =
+{
+    /* O Tetromino */
     {
         {
-            {0,0,0,0},
-            {0,1,1,0},
-            {0,1,1,0},
-            {0,0,0,0}
-        },
-        { {0,0,0,0},{0,1,1,0},{0,1,1,0},{0,0,0,0} },
-        { {0,0,0,0},{0,1,1,0},{0,1,1,0},{0,0,0,0} },
-        { {0,0,0,0},{0,1,1,0},{0,1,1,0},{0,0,0,0} }
-    },
-    // I Tetromino
-    {
-        {
-            {0,0,0,0},
-            {1,1,1,1},
-            {0,0,0,0},
-            {0,0,0,0}
+            {0, 0, 0, 0},
+            {0, 1, 1, 0},
+            {0, 1, 1, 0},
+            {0, 0, 0, 0}
         },
         {
-            {0,0,1,0},
-            {0,0,1,0},
-            {0,0,1,0},
-            {0,0,1,0}
+            {0, 0, 0, 0},
+            {0, 1, 1, 0},
+            {0, 1, 1, 0},
+            {0, 0, 0, 0}
         },
         {
-            {0,0,0,0},
-            {0,0,0,0},
-            {1,1,1,1},
-            {0,0,0,0}
+            {0, 0, 0, 0},
+            {0, 1, 1, 0},
+            {0, 1, 1, 0},
+            {0, 0, 0, 0}
         },
         {
-            {0,1,0,0},
-            {0,1,0,0},
-            {0,1,0,0},
-            {0,1,0,0}
+            {0, 0, 0, 0},
+            {0, 1, 1, 0},
+            {0, 1, 1, 0},
+            {0, 0, 0, 0}
         }
     },
-    // T Tetromino
+    /* I Tetromino */
     {
         {
-            {0,0,0,0},
-            {0,1,0,0},
-            {1,1,1,0},
-            {0,0,0,0}
+            {0, 0, 0, 0},
+            {1, 1, 1, 1},
+            {0, 0, 0, 0},
+            {0, 0, 0, 0}
         },
         {
-            {0,0,1,0},
-            {0,1,1,0},
-            {0,0,1,0},
-            {0,0,0,0}
+            {0, 0, 1, 0},
+            {0, 0, 1, 0},
+            {0, 0, 1, 0},
+            {0, 0, 1, 0}
         },
         {
-            {0,0,0,0},
-            {1,1,1,0},
-            {0,1,0,0},
-            {0,0,0,0}
+            {0, 0, 0, 0},
+            {0, 0, 0, 0},
+            {1, 1, 1, 1},
+            {0, 0, 0, 0}
         },
         {
-            {0,1,0,0},
-            {1,1,0,0},
-            {0,1,0,0},
-            {0,0,0,0}
+            {0, 1, 0, 0},
+            {0, 1, 0, 0},
+            {0, 1, 0, 0},
+            {0, 1, 0, 0}
         }
     },
-    // S Tetromino
+    /* T Tetromino */
     {
         {
-            {0,0,0,0},
-            {0,1,1,0},
-            {1,1,0,0},
-            {0,0,0,0}
+            {0, 0, 0, 0},
+            {0, 1, 0, 0},
+            {1, 1, 1, 0},
+            {0, 0, 0, 0}
         },
         {
-            {0,1,0,0},
-            {0,1,1,0},
-            {0,0,1,0},
-            {0,0,0,0}
+            {0, 0, 1, 0},
+            {0, 1, 1, 0},
+            {0, 0, 1, 0},
+            {0, 0, 0, 0}
         },
         {
-            {0,0,0,0},
-            {0,1,1,0},
-            {1,1,0,0},
-            {0,0,0,0}
+            {0, 0, 0, 0},
+            {1, 1, 1, 0},
+            {0, 1, 0, 0},
+            {0, 0, 0, 0}
         },
         {
-            {0,1,0,0},
-            {0,1,1,0},
-            {0,0,1,0},
-            {0,0,0,0}
+            {0, 1, 0, 0},
+            {1, 1, 0, 0},
+            {0, 1, 0, 0},
+            {0, 0, 0, 0}
         }
     },
-    // Z Tetromino
+    /* S Tetromino */
     {
         {
-            {0,0,0,0},
-            {1,1,0,0},
-            {0,1,1,0},
-            {0,0,0,0}
+            {0, 0, 0, 0},
+            {0, 1, 1, 0},
+            {1, 1, 0, 0},
+            {0, 0, 0, 0}
         },
         {
-            {0,0,1,0},
-            {0,1,1,0},
-            {0,1,0,0},
-            {0,0,0,0}
+            {0, 1, 0, 0},
+            {0, 1, 1, 0},
+            {0, 0, 1, 0},
+            {0, 0, 0, 0}
         },
         {
-            {0,0,0,0},
-            {1,1,0,0},
-            {0,1,1,0},
-            {0,0,0,0}
+            {0, 0, 0, 0},
+            {0, 1, 1, 0},
+            {1, 1, 0, 0},
+            {0, 0, 0, 0}
         },
         {
-            {0,0,1,0},
-            {0,1,1,0},
-            {0,1,0,0},
-            {0,0,0,0}
+            {0, 1, 0, 0},
+            {0, 1, 1, 0},
+            {0, 0, 1, 0},
+            {0, 0, 0, 0}
         }
     },
-    // J Tetromino
+    /* Z Tetromino */
     {
         {
-            {0,0,0,0},
-            {1,0,0,0},
-            {1,1,1,0},
-            {0,0,0,0}
+            {0, 0, 0, 0},
+            {1, 1, 0, 0},
+            {0, 1, 1, 0},
+            {0, 0, 0, 0}
         },
         {
-            {0,0,1,0},
-            {0,0,1,0},
-            {0,1,1,0},
-            {0,0,0,0}
+            {0, 0, 1, 0},
+            {0, 1, 1, 0},
+            {0, 1, 0, 0},
+            {0, 0, 0, 0}
         },
         {
-            {0,0,0,0},
-            {1,1,1,0},
-            {0,0,1,0},
-            {0,0,0,0}
+            {0, 0, 0, 0},
+            {1, 1, 0, 0},
+            {0, 1, 1, 0},
+            {0, 0, 0, 0}
         },
         {
-            {0,1,1,0},
-            {0,1,0,0},
-            {0,1,0,0},
-            {0,0,0,0}
+            {0, 0, 1, 0},
+            {0, 1, 1, 0},
+            {0, 1, 0, 0},
+            {0, 0, 0, 0}
         }
     },
-    // L Tetromino
+    /* J Tetromino */
     {
         {
-            {0,0,0,0},
-            {0,0,1,0},
-            {1,1,1,0},
-            {0,0,0,0}
+            {0, 0, 0, 0},
+            {1, 0, 0, 0},
+            {1, 1, 1, 0},
+            {0, 0, 0, 0}
         },
         {
-            {0,1,1,0},
-            {0,0,1,0},
-            {0,0,1,0},
-            {0,0,0,0}
+            {0, 0, 1, 0},
+            {0, 0, 1, 0},
+            {0, 1, 1, 0},
+            {0, 0, 0, 0}
         },
         {
-            {0,0,0,0},
-            {1,1,1,0},
-            {1,0,0,0},
-            {0,0,0,0}
+            {0, 0, 0, 0},
+            {1, 1, 1, 0},
+            {0, 0, 1, 0},
+            {0, 0, 0, 0}
         },
         {
-            {0,1,0,0},
-            {0,1,0,0},
-            {0,1,1,0},
-            {0,0,0,0}
+            {0, 1, 1, 0},
+            {0, 1, 0, 0},
+            {0, 1, 0, 0},
+            {0, 0, 0, 0}
+        }
+    },
+    /* L Tetromino */
+    {
+        {
+            {0, 0, 0, 0},
+            {0, 0, 1, 0},
+            {1, 1, 1, 0},
+            {0, 0, 0, 0}
+        },
+        {
+            {0, 1, 1, 0},
+            {0, 0, 1, 0},
+            {0, 0, 1, 0},
+            {0, 0, 0, 0}
+        },
+        {
+            {0, 0, 0, 0},
+            {1, 1, 1, 0},
+            {1, 0, 0, 0},
+            {0, 0, 0, 0}
+        },
+        {
+            {0, 1, 0, 0},
+            {0, 1, 0, 0},
+            {0, 1, 1, 0},
+            {0, 0, 0, 0}
         }
     }
 };
 
-//---------------------------------------------------------------------
-// Helper: draw_tetris_initial_map()
-// Draw the static parts of the Tetris display: the border and any locked pieces.
-// (Initially, the grid is empty.) This is drawn once at startup.
-void draw_tetris_map(void) {
-    // Clear the entire screen.
+/* Named constants to replace magic numbers */
+#define DROP_SPEED       (5U)
+#define INVALID_INPUT    (-1)
+#define INPUT_ROTATE     (1)
+#define INPUT_MOVE_LEFT  (3)
+#define INPUT_MOVE_RIGHT (4)
+#define INPUT_HARD_DROP  (5)
+#define INITIAL_PIECE_Y  (-4)
+
+/* Forward declarations for internal helper functions */
+static void DrawSmallBlock(int x, int y, uint16_t color);
+static int clear_lines(void);
+static void update_score(int lines);
+static void redraw_grid(void);
+static void redraw_rows(int start_row, int end_row);
+static void update_status_display(const Tetrimino *next_piece);
+static int is_game_over(void);
+static void handle_game_over(void);
+
+void draw_tetris_map(void)
+{
+    uint32_t row, col;
     LCD_Clear(BLACK);
-
-    // --- Draw Left Border (15px wide, 140px tall) using DrawWall5 ---
-    // 15px / 5 = 3 blocks wide; 140px / 5 = 28 blocks tall.
-    for (int row = 0; row < 56; row++) {
-        for (int col = 0; col < 3; col++) {
-            // Draw at (x, y) relative to the screen.
-            DrawWall5(col * 5, row * 5, GREY);
+    /* Draw left border */
+    for (row = 0U; row < 56U; row++)
+    {
+        for (col = 0U; col < 3U; col++)
+        {
+            DrawWall5((int)(col * 5), (int)(row * 5), GREY);
         }
     }
-
-    // --- Draw Right Border (15px wide, 140px tall) using DrawWall5 ---
-    // Right border starts at x = PLAY_X_OFFSET + PLAY_WIDTH = 15 + 280 = 295.
-    for (int row = 0; row < 56; row++) {
-        for (int col = 0; col < 3; col++) {
-            DrawWall5(155 + col * 5, row * 5, GREY);
+    /* Draw right border */
+    for (row = 0U; row < 56U; row++)
+    {
+        for (col = 0U; col < 3U; col++)
+        {
+            DrawWall5((int)(155 + col * 5), (int)(row * 5), GREY);
         }
     }
-
-    // --- Draw Bottom Border (40px tall, 280px wide) using DrawWall (10x10 blocks) ---
-    // Bottom border starts at y = PLAY_Y_OFFSET + PLAY_HEIGHT = 0 + 140 = 140.
-    // 280px / 10 = 28 blocks wide; 40px / 10 = 4 blocks tall.
-    for (int row = 0; row < 4; row++) {
-        for (int col = 0; col < 28; col++) {
-            DrawWall(15 + col * 10, 280 + row * 10, GREY);
+    /* Draw bottom border */
+    for (row = 0U; row < 4U; row++)
+    {
+        for (col = 0U; col < 28U; col++)
+        {
+            DrawWall((int)(15 + col * 10), (int)(280 + row * 10), GREY);
         }
     }
 }
 
-
-
-//---------------------------------------------------------------------
-// play_tetris()
-// This version uses incremental updates (like the snake logic) instead of
-// clearing and redrawing the entire display every frame. It only erases (by drawing
-// BLACK or the appropriate locked-cell color) those cells that the falling piece no longer occupies,
-// then draws the new falling piece blocks.
-//---------------------------------------------------------------------
-void play_tetris(void) {
-    draw_tetris_map();
-
-    // Clear the grid.
-    for (int i = 0; i < TETRIS_ROWS; i++) {
-        for (int j = 0; j < TETRIS_COLS; j++) {
-            tetris_grid[i][j] = 0;
-        }
-    }
-
-    int game_over = 0;
-    int drop_counter = 0;
-
-
-    // Create the first falling piece.
-    Tetrimino current_piece = {TETRIS_COLS / 2 - 1, -4, rand() % 7, 0};
-
-    // old_positions will hold the grid (col, row) of each block of the falling piece from the previous iteration.
-    int old_positions[4][2] = { {-1,-1}, {-1,-1}, {-1,-1}, {-1,-1} };
-
-    while (!game_over) {
-
-        // Process user input.
-        int curr_input = get_input();
-
-		if (curr_input != -1) {
-			if (curr_input == 3) {         // Move left.
-				move_piece(&current_piece, -1);
-			} else if (curr_input == 4) {  // Move right.
-				move_piece(&current_piece, 1);
-			} else if (curr_input == 1) {  // Rotate.
-				rotate_piece(&current_piece);
-			} else if (curr_input == 5 && hard_drop_used == 0) {  // Hard drop.
-				hard_drop(&current_piece);
-			}
-		}
-		HAL_Delay(50);
-
-
-
-
-        // Compute the new positions for the current falling piece.
-        int new_positions[4][2];
-        int idx = 0;
-        for (int m = 0; m < 4; m++) {
-            for (int n = 0; n < 4; n++) {
-                if (shapes[current_piece.shape][current_piece.rotation][m][n]) {
-                    new_positions[idx][0] = current_piece.x + n;
-                    new_positions[idx][1] = current_piece.y + m;
-                    idx++;
-                }
-            }
-        }
-
-        // Erase blocks that are no longer occupied by the falling piece.
-        for (int i = 0; i < 4; i++) {
-            bool stillOccupied = false;
-            if (old_positions[i][0] != -1) {
-                for (int j = 0; j < 4; j++) {
-                    if (old_positions[i][0] == new_positions[j][0] &&
-                        old_positions[i][1] == new_positions[j][1]) {
-                        stillOccupied = true;
-                        break;
-                    }
-                }
-                if (!stillOccupied) {
-                    int col = old_positions[i][0];
-                    int row = old_positions[i][1];
-                    if (row >= 0 && row < TETRIS_ROWS && col >= 0 && col < TETRIS_COLS) {
-                        uint16_t x = col * 14 + 15;
-                        uint16_t y = row * 14;
-                        // If the cell is locked, redraw the locked block (GREEN); otherwise, clear it (BLACK).
-                        if (tetris_grid[row][col])
-                            DrawTetrisBlock(x, y, GREEN);
-                        else
-                            DrawTetrisBlock(x, y, BLACK);
-                    }
-                }
-            }
-        }
-
-        // Draw the falling piece in its new positions.
-        for (int i = 0; i < 4; i++) {
-            int col = new_positions[i][0];
-            int row = new_positions[i][1];
-            if (row >= 0 && row < TETRIS_ROWS && col >= 0 && col < TETRIS_COLS) {
-                uint16_t x = col * 14 + 15;
-                uint16_t y = row * 14;
-                DrawTetrisBlock(x, y, RED);
-            }
-        }
-
-        // Update old_positions for the next iteration.
-        for (int i = 0; i < 4; i++) {
-            old_positions[i][0] = new_positions[i][0];
-            old_positions[i][1] = new_positions[i][1];
-        }
-
-        // Drop logic: increase drop counter and attempt to move the piece down.
-        drop_counter++;
-        if (drop_counter >= 5) { // Adjust drop speed as needed.
-            drop_counter = 0;
-            current_piece.y++;
-            if (check_collision(&current_piece)) {
-                // Undo the move.
-                current_piece.y--;
-                // Lock the piece: update the grid and draw locked blocks.
-                lock_piece(&current_piece);
-                for (int m = 0; m < 4; m++) {
-                    for (int n = 0; n < 4; n++) {
-                        if (shapes[current_piece.shape][current_piece.rotation][m][n]) {
-                            int col = current_piece.x + n;
-                            int row = current_piece.y + m;
-                            if (row >= 0 && row < TETRIS_ROWS && col >= 0 && col < TETRIS_COLS) {
-                                tetris_grid[row][col] = 1;
-                                uint16_t x = col * 14 + 15;
-                                uint16_t y = row * 14;
-                                DrawTetrisBlock(x, y, GREEN);
-                            }
-                        }
-                    }
-                }
-                // Clear any remnants of the falling piece.
-                for (int i = 0; i < 4; i++) {
-                    old_positions[i][0] = -1;
-                    old_positions[i][1] = -1;
-                }
-                // Generate a new falling piece.
-                current_piece.x = TETRIS_COLS / 2 - 1;
-                current_piece.y = -4;
-                current_piece.shape = rand() % 7;
-                current_piece.rotation = 0;
-                hard_drop_used = 0; // Reset hard drop status for the new piece
-                if (check_collision(&current_piece)) {
-                    game_over = 1;
-                }
-            }
-        }
-    } // end game loop
-
-    // Game over: display message.
-    LCD_DrawString(20, (TETRIS_ROWS * 10) / 2, "GAME OVER", WHITE, BLACK, 2);
-    HAL_Delay(3000);
+/*
+ * Stub for LCD_FillRect.
+ * If your LCD driver already implements LCD_FillRect, remove this stub.
+ */
+void LCD_FillRect(int x, int y, int width, int height, uint16_t color)
+{
+    /* Implementation-specific: Draw a filled rectangle at (x,y) with the specified width, height, and color.
+       For example, you might call a lower-level graphics routine here. */
 }
 
-int check_collision(Tetrimino *piece) {
-    for (int m = 0; m < 4; m++) {
-        for (int n = 0; n < 4; n++) {
-            if (shapes[piece->shape][piece->rotation][m][n]) {
-                int x = piece->x + n;
-                int y = piece->y + m;
-                // Check grid boundaries (allow negative y for new pieces).
-                if (x < 0 || x >= TETRIS_COLS || y >= TETRIS_ROWS)
-                    return 1;
-                if (y >= 0 && tetris_grid[y][x])
-                    return 1;
+/*
+ * DrawSmallBlock
+ *
+ * Draws a small block (7x7 pixels) at the given coordinates.
+ */
+static void DrawSmallBlock(int x, int y, uint16_t color)
+{
+    LCD_FillRect(x, y, 7, 7, color);
+}
+
+/*
+ * update_status_display
+ *
+ * Updates the status area at the bottom of the screen with the current score
+ * and a preview of the next piece.
+ */
+static void update_status_display(const Tetrimino *next_piece)
+{
+    char scoreStr[32];
+    /* Display score */
+    sprintf(scoreStr, "Score: %lu", (unsigned long)score);
+    LCD_DrawString(5, 285, scoreStr, WHITE, GREY, 1);
+
+    /* Display label "Next:" */
+    LCD_DrawString(100, 285, "Next:", WHITE, GREY, 1);
+
+    /* Draw the next piece preview in a 4x4 grid starting at (100,300) */
+    for (int m = 0; m < 4; m++)
+    {
+        for (int n = 0; n < 4; n++)
+        {
+            int x = 100 + n * 8;  /* 8-pixel spacing */
+            int y = 300 + m * 8;
+            if (shapes[next_piece->shape][next_piece->rotation][m][n] != 0)
+            {
+                DrawSmallBlock(x, y, RED);
             }
+            else
+            {
+                LCD_FillRect(x, y, 7, 7, BLACK);
+            }
+        }
+    }
+}
+
+/*
+ * redraw_rows
+ *
+ * Redraws only the specified rows (from start_row to end_row inclusive)
+ * from the Tetris grid.
+ */
+static void redraw_rows(int start_row, int end_row)
+{
+    int row, col;
+    uint16_t x, y;
+    for (row = start_row; row <= end_row; row++)
+    {
+        for (col = 0; col < (int)TETRIS_COLS; col++)
+        {
+            x = (uint16_t)(col * 14 + 15);
+            y = (uint16_t)(row * 14);
+            DrawTetrisBlock(x, y, (tetris_grid[row][col] != 0) ? GREEN : BLACK);
+        }
+    }
+}
+
+/*
+ * redraw_grid
+ *
+ * Redraws the entire Tetris grid.
+ */
+static void redraw_grid(void)
+{
+    int row, col;
+    uint16_t x, y;
+    for (row = 0; row < (int)TETRIS_ROWS; row++)
+    {
+        for (col = 0; col < (int)TETRIS_COLS; col++)
+        {
+            x = (uint16_t)(col * 14 + 15);
+            y = (uint16_t)(row * 14);
+            DrawTetrisBlock(x, y, (tetris_grid[row][col] != 0) ? GREEN : BLACK);
+        }
+    }
+}
+
+/*
+ * clear_lines
+ *
+ * Scans the Tetris grid for complete lines. It shifts non-full rows down and
+ * clears the rows above. Returns the number of lines cleared.
+ */
+static int clear_lines(void)
+{
+    int linesCleared = 0;
+    int row, col;
+    int writeRow = (int)TETRIS_ROWS - 1;
+
+    for (row = (int)TETRIS_ROWS - 1; row >= 0; row--)
+    {
+        bool full = true;
+        for (col = 0; col < (int)TETRIS_COLS; col++)
+        {
+            if (tetris_grid[row][col] == 0)
+            {
+                full = false;
+                break;
+            }
+        }
+        if (full)
+        {
+            linesCleared++;
+        }
+        else
+        {
+            if (writeRow != row)
+            {
+                for (col = 0; col < (int)TETRIS_COLS; col++)
+                {
+                    tetris_grid[writeRow][col] = tetris_grid[row][col];
+                }
+            }
+            writeRow--;
+        }
+    }
+    for (row = writeRow; row >= 0; row--)
+    {
+        for (col = 0; col < (int)TETRIS_COLS; col++)
+        {
+            tetris_grid[row][col] = 0;
+        }
+    }
+    return linesCleared;
+}
+
+/*
+ * update_score
+ *
+ * Updates the global score based on the number of lines cleared.
+ */
+static void update_score(int lines)
+{
+    if (lines == 1)
+    {
+        score += 40U;
+    }
+    else if (lines == 2)
+    {
+        score += 100U;
+    }
+    else if (lines == 3)
+    {
+        score += 300U;
+    }
+    else if (lines >= 4)
+    {
+        score += 1200U;
+    }
+}
+
+/*
+ * is_game_over
+ *
+ * Returns 1 if any cell in the top row is occupied, 0 otherwise.
+ */
+static int is_game_over(void)
+{
+    for (uint32_t col = 0U; col < TETRIS_COLS; col++)
+    {
+        if (tetris_grid[0][col] != 0)
+        {
+            return 1;
         }
     }
     return 0;
 }
 
-void lock_piece(Tetrimino *piece) {
-    for (int m = 0; m < 4; m++) {
-        for (int n = 0; n < 4; n++) {
-            if (shapes[piece->shape][piece->rotation][m][n]) {
-                int x = piece->x + n;
-                int y = piece->y + m;
-                if (x >= 0 && x < TETRIS_COLS && y >= 0 && y < TETRIS_ROWS) {
+/*
+ * handle_game_over
+ *
+ * Clears the screen and displays the final score.
+ */
+static void handle_game_over(void)
+{
+    char gameOverStr[10];
+    char scoreStr[20];
+    LCD_Clear(BLACK);
+
+    sprintf(scoreStr, "Score: %lu", (unsigned long)score);
+    LCD_DrawString(50, 3 * 20, "Game Over.", WHITE, BLACK, 2.5);
+    LCD_DrawString(50, 5 * 20, scoreStr, WHITE, BLACK, 2.5);
+    while (get_input() == INVALID_INPUT)
+    {
+        HAL_Delay(100);
+    }
+}
+
+/******************************************************************************
+ * play_tetris
+ *
+ * Main game loop.
+ *****************************************************************************/
+void play_tetris(void)
+{
+    uint32_t i, j, m, n, idx;
+    int curr_input;
+    int drop_counter = 0;
+    int game_over = 0;
+    int new_positions[4][2];
+    int old_positions[4][2];
+    Tetrimino current_piece;
+    Tetrimino next_piece;
+
+    /* Initialize old_positions */
+    for (i = 0U; i < 4U; i++)
+    {
+        old_positions[i][0] = -1;
+        old_positions[i][1] = -1;
+    }
+
+    /* Draw static map and clear grid */
+    draw_tetris_map();
+    for (i = 0U; i < TETRIS_ROWS; i++)
+    {
+        for (j = 0U; j < TETRIS_COLS; j++)
+        {
+            tetris_grid[i][j] = 0;
+        }
+    }
+
+    /* Initialize next_piece */
+    next_piece.x = ((int)TETRIS_COLS / 2) - 1; /* Not used in preview */
+    next_piece.y = INITIAL_PIECE_Y;
+    next_piece.shape = (rand() % 7);
+    next_piece.rotation = 0;
+
+    /* current_piece becomes next_piece and generate a new next_piece */
+    current_piece = next_piece;
+    next_piece.x = ((int)TETRIS_COLS / 2) - 1;
+    next_piece.y = INITIAL_PIECE_Y;
+    next_piece.shape = (rand() % 7);
+    next_piece.rotation = 0;
+    update_status_display(&next_piece);
+
+    /* Main game loop */
+    while (game_over == 0)
+    {
+        curr_input = get_input();
+        if (curr_input != INVALID_INPUT)
+        {
+            if (curr_input == INPUT_MOVE_LEFT)
+            {
+                move_piece(&current_piece, -1);
+            }
+            else if (curr_input == INPUT_MOVE_RIGHT)
+            {
+                move_piece(&current_piece, 1);
+            }
+            else if (curr_input == INPUT_ROTATE)
+            {
+                rotate_piece(&current_piece);
+            }
+            else if ((curr_input == INPUT_HARD_DROP) && (hard_drop_used == 0))
+            {
+                hard_drop(&current_piece);
+            }
+        }
+        HAL_Delay(10);
+
+        idx = 0U;
+        for (m = 0U; m < 4U; m++)
+        {
+            for (n = 0U; n < 4U; n++)
+            {
+                if (shapes[current_piece.shape][current_piece.rotation][m][n] != 0)
+                {
+                    if (idx < 4U)
+                    {
+                        new_positions[idx][0] = current_piece.x + (int)n;
+                        new_positions[idx][1] = current_piece.y + (int)m;
+                        idx++;
+                    }
+                }
+            }
+        }
+
+        for (i = 0U; i < 4U; i++)
+        {
+            bool stillOccupied = false;
+            if (old_positions[i][0] != -1)
+            {
+                for (j = 0U; j < 4U; j++)
+                {
+                    if ((old_positions[i][0] == new_positions[j][0]) &&
+                        (old_positions[i][1] == new_positions[j][1]))
+                    {
+                        stillOccupied = true;
+                        break;
+                    }
+                }
+                if (!stillOccupied)
+                {
+                    int col = old_positions[i][0];
+                    int row = old_positions[i][1];
+                    if ((row >= 0) && (row < (int)TETRIS_ROWS) &&
+                        (col >= 0) && (col < (int)TETRIS_COLS))
+                    {
+                        DrawTetrisBlock((int)(col * 14 + 15),
+                                          (int)(row * 14),
+                                          (tetris_grid[row][col] != 0) ? GREEN : BLACK);
+                    }
+                }
+            }
+        }
+
+        for (i = 0U; i < 4U; i++)
+        {
+            int col = new_positions[i][0];
+            int row = new_positions[i][1];
+            if ((row >= 0) && (row < (int)TETRIS_ROWS) &&
+                (col >= 0) && (col < (int)TETRIS_COLS))
+            {
+                DrawTetrisBlock((int)(col * 14 + 15),
+                                  (int)(row * 14),
+                                  RED);
+            }
+        }
+
+        for (i = 0U; i < 4U; i++)
+        {
+            old_positions[i][0] = new_positions[i][0];
+            old_positions[i][1] = new_positions[i][1];
+        }
+
+        drop_counter++;
+        if (drop_counter >= (int)DROP_SPEED)
+        {
+            drop_counter = 0;
+            current_piece.y++;
+            if (check_collision(&current_piece) != 0)
+            {
+                current_piece.y--;
+                lock_piece(&current_piece);
+
+                {
+                    int cleared = clear_lines();
+                    if (cleared > 0)
+                    {
+                        update_score(cleared);
+                        redraw_grid();
+                    }
+                    else
+                    {
+                        int minRow = current_piece.y;
+                        int maxRow = current_piece.y + 3;
+                        if (minRow < 0)
+                        {
+                            minRow = 0;
+                        }
+                        if (maxRow >= (int)TETRIS_ROWS)
+                        {
+                            maxRow = (int)TETRIS_ROWS - 1;
+                        }
+                        redraw_rows(minRow, maxRow);
+                    }
+                }
+
+                if (is_game_over() != 0)
+                {
+                    game_over = 1;
+                    break;
+                }
+
+                /* Advance: current_piece becomes next_piece, and generate a new next_piece */
+                current_piece = next_piece;
+                next_piece.x = ((int)TETRIS_COLS / 2) - 1;
+                next_piece.y = INITIAL_PIECE_Y;
+                next_piece.shape = (rand() % 7);
+                next_piece.rotation = 0;
+                hard_drop_used = 0;
+                update_status_display(&next_piece);
+
+                for (i = 0U; i < 4U; i++)
+                {
+                    old_positions[i][0] = -1;
+                    old_positions[i][1] = -1;
+                }
+                if (check_collision(&current_piece) != 0)
+                {
+                    game_over = 1;
+                }
+            }
+        }
+    }
+    handle_game_over();
+}
+
+/*===========================================================================
+ * check_collision
+ *
+ * Checks if the given Tetrimino collides with boundaries or locked blocks.
+ * Returns 1 if collision is detected, 0 otherwise.
+ *===========================================================================*/
+int check_collision(Tetrimino *piece)
+{
+    uint32_t m, n;
+    int retVal = 0;
+    for (m = 0U; m < 4U; m++)
+    {
+        for (n = 0U; n < 4U; n++)
+        {
+            if (shapes[piece->shape][piece->rotation][m][n] != 0)
+            {
+                int x = piece->x + (int)n;
+                int y = piece->y + (int)m;
+                if ((x < 0) || (x >= (int)TETRIS_COLS) || (y >= (int)TETRIS_ROWS))
+                {
+                    retVal = 1;
+                    break;
+                }
+                if ((y >= 0) && (tetris_grid[y][x] != 0))
+                {
+                    retVal = 1;
+                    break;
+                }
+            }
+        }
+        if (retVal != 0)
+        {
+            break;
+        }
+    }
+    return retVal;
+}
+
+/*===========================================================================
+ * lock_piece
+ *
+ * Locks the current Tetrimino into the grid.
+ *===========================================================================*/
+void lock_piece(Tetrimino *piece)
+{
+    uint32_t m, n;
+    for (m = 0U; m < 4U; m++)
+    {
+        for (n = 0U; n < 4U; n++)
+        {
+            if (shapes[piece->shape][piece->rotation][m][n] != 0)
+            {
+                int x = piece->x + (int)n;
+                int y = piece->y + (int)m;
+                if ((x >= 0) && (x < (int)TETRIS_COLS) &&
+                    (y >= 0) && (y < (int)TETRIS_ROWS))
+                {
                     tetris_grid[y][x] = 1;
                 }
             }
@@ -408,32 +756,49 @@ void lock_piece(Tetrimino *piece) {
     }
 }
 
-void move_piece(Tetrimino *piece, int dx) {
+/*===========================================================================
+ * move_piece
+ *
+ * Moves the current piece horizontally; reverts if collision occurs.
+ *===========================================================================*/
+void move_piece(Tetrimino *piece, int dx)
+{
     piece->x += dx;
-    if (check_collision(piece)) {
+    if (check_collision(piece) != 0)
+    {
         piece->x -= dx;
     }
 }
 
-void rotate_piece(Tetrimino *piece) {
+/*===========================================================================
+ * rotate_piece
+ *
+ * Rotates the current piece clockwise; reverts if collision occurs.
+ *===========================================================================*/
+void rotate_piece(Tetrimino *piece)
+{
     int original_rotation = piece->rotation;
     piece->rotation = (piece->rotation + 1) % 4;
-    if (check_collision(piece)) {
+    if (check_collision(piece) != 0)
+    {
         piece->rotation = original_rotation;
     }
 }
 
-// Hard drop: Move piece to bottom instantly.
-void hard_drop(Tetrimino *piece) {
-
-    while (!check_collision(piece)) {
+/*===========================================================================
+ * hard_drop
+ *
+ * Moves the piece down until collision occurs, then locks it.
+ *===========================================================================*/
+void hard_drop(Tetrimino *piece)
+{
+    while (check_collision(piece) == 0)
+    {
         piece->y++;
     }
-    piece->y--; // Place at last valid position
+    piece->y--; /* Last valid position */
     lock_piece(piece);
-
-    // Mark that a hard drop has been used for this piece
     hard_drop_used = 1;
 }
 
-
+/* End of Tetris Game Code */
