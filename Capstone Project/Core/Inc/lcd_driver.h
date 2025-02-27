@@ -17,11 +17,18 @@ extern SPI_HandleTypeDef hspi1;
 
 #define BLACK 0x0000
 #define WHITE 0xFFFF
-#define RED   0xFC00  // Adjusted for 6-bit red
-#define GREEN 0x07E0  // Adjusted for 6-bit green
-#define BLUE  0x001F  // Adjusted for 6-bit blue
+#define RED   0xFC00
+#define BLUE  0x001F
 #define GREY    0x8410
 #define YELLOW  0xFFE0
+#define MAROON 0x8000
+#define LIGHT_GREEN 0x07E0
+#define GREEN 0x03E0
+#define DARK_GREEN 0x01E0
+#define DARK_GREY 0x4208  // Darker than GREY but not full black
+
+#define LCD_WIDTH    240
+#define LCD_HEIGHT   320
 
 // Menu navigation variables
 typedef enum {
@@ -56,5 +63,8 @@ void DrawWall5(uint16_t x, uint16_t y, uint16_t color);
 void DrawTetrisBlock(uint16_t x, uint16_t y, uint16_t color);
 void DrawSnakeBody(uint16_t cx, uint16_t cy, uint16_t color);
 void DrawApple(uint16_t cx, uint16_t cy, uint16_t color);
-
+void LCD_FillRect(int x, int y, int w, int h, uint16_t color);
+void LCD_DrawLine(int x0, int y0, int x1, int y1, uint16_t color);
+void LCD_DrawAMLogo(void);
+void LCD_DrawImage(uint16_t startX, uint16_t startY, uint8_t scale, uint8_t type);
 #endif // LCD_HELPER_H

@@ -14,7 +14,6 @@
 
 #include "tetris.h"
 #include "lcd_driver.h"
-#include "lcd_config.h"
 #include "input.h"
 #include <stdlib.h>
 #include <time.h>

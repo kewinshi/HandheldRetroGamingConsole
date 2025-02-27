@@ -1,7 +1,6 @@
 #include "main.h"
 #include "snake.h"
 #include "lcd_driver.h"
-#include "lcd_config.h"
 #include "input.h"
 
 #include <stdio.h>

@@ -21,10 +21,15 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <string.h>
+#include <time.h>
+#include <stdlib.h>
+
 #include "menu_main.h"
 #include "lcd_driver.h"
 #include "input.h"
-#include "lcd_config.h"
+#include "buzzer_driver.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -114,18 +119,15 @@ int main(void)
   MX_SPI1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-//	HAL_Delay(100);
   // Initialize random seed only once
-	srand(time(NULL));
-	LCD_Init();
-	LCD_Clear(GREEN);
-	HAL_Delay(1000);
-	LCD_Clear(BLACK);
-	LCD_Drawpixel(0,0, GREEN);
-	LCD_Drawpixel(169,0, RED);
-	LCD_Drawpixel(0, 319, BLUE);
-	LCD_Drawpixel(169,319, GREEN);
-//	play_tetris();
+  srand(time(NULL));
+  displayStartup();
+
+	// BUZZER TEST PROGRAM
+//	while (1) {
+//	    toggle_PA11();  // Toggle PA                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       11
+//	    HAL_Delay(5); // 5ms delay
+//	}
 
 
   /* USER CODE END 2 */
