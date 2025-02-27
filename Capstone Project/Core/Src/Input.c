@@ -5,32 +5,32 @@
 int get_input(void) {
 	if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0) == GPIO_PIN_RESET) // back
 	{
-		print("back");
+//		print("back");
 		return 0;
 	}
 	else if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1) == GPIO_PIN_RESET) // select
 	{
-		print("select");
+//		print("select");
 		return 1;
 	}
 	else if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_2) == GPIO_PIN_RESET) // up
 	{
-		print("up");
+//		print("up");
 		return 2;
 	}
 	else if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_3) == GPIO_PIN_RESET) // left
 	{
-		print("left");
+//		print("left");
 		return 3;
 	}
 	else if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_4) == GPIO_PIN_RESET) // right
 	{
-		print("right");
+//		print("right");
 		return 4;
 	}
 	else if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_5) == GPIO_PIN_RESET) // down
 	{
-		print("down");
+//		print("down");
 		return 5;
 	}
 	else {

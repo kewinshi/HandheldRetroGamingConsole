@@ -1,5 +1,6 @@
 #include "main.h"
 #include "lcd_driver.h"
+#include <stdlib.h>
 
 //------------------------------------------------------------------------------
 // LCD Low-Level Functions
@@ -615,6 +616,38 @@ void LCD_DrawImage(uint16_t startX, uint16_t startY, uint8_t scale, uint8_t type
         }
     }
 }
+
+Star stars[NUM_STARS];
+// Initialize the star field with random positions and speeds
+void initStarField(void) {
+    for (int i = 0; i < NUM_STARS; i++) {
+        stars[i].x = rand() % LCD_WIDTH;
+        stars[i].y = rand() % LCD_HEIGHT;
+        stars[i].speed = 1 + (rand() % 3);  // Speed between 1 and 3
+    }
+}
+
+// Update and redraw the star field
+void updateStarField(void) {
+    // For each star:
+    for (int i = 0; i < NUM_STARS; i++) {
+        // Erase the star at its current position by drawing the background color.
+        LCD_Drawpixel(stars[i].x, stars[i].y, BACKGROUND_COLOR);
+
+        // Update the star's horizontal position by its speed.
+        stars[i].x += stars[i].speed;
+
+        // Wrap around if the star goes off the right edge of the screen.
+        if (stars[i].x >= LCD_WIDTH) {
+            stars[i].x = 0;
+            stars[i].y = rand() % LCD_HEIGHT; // Optionally, set a new random vertical position.
+        }
+
+        // Draw the star at its new position.
+        LCD_Drawpixel(stars[i].x, stars[i].y, STAR_COLOR);
+    }
+}
+
 
 
 

@@ -67,4 +67,20 @@ void LCD_FillRect(int x, int y, int w, int h, uint16_t color);
 void LCD_DrawLine(int x0, int y0, int x1, int y1, uint16_t color);
 void LCD_DrawAMLogo(void);
 void LCD_DrawImage(uint16_t startX, uint16_t startY, uint8_t scale, uint8_t type);
+void initStarField(void);
+void updateStarField(void);
+
+#define NUM_STARS 10
+#define STAR_COLOR WHITE
+#define BACKGROUND_COLOR BLACK
+
+// Structure for a star
+typedef struct {
+    int x;
+    int y;
+    int speed;  // Vertical speed (e.g., 1 to 3 pixels per update)
+} Star;
+
+// Declare the global star array as extern
+extern Star stars[NUM_STARS];
 #endif // LCD_HELPER_H

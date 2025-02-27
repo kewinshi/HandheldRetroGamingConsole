@@ -35,7 +35,7 @@ void play_snake() {
 
     // Draw the initial snake.
     for (int i = 0; i < snake_length; i++) {
-        DrawSnakeBody(snake_body[i].x * 10 + 5, snake_body[i].y * 10 + 5, GREEN);
+        DrawSnakeBody(snake_body[i].x * 10 + 5, snake_body[i].y * 10 + 5, LIGHT_GREEN);
     }
 
     // Generate the first apple ensuring it does not appear on the snake.
@@ -164,7 +164,7 @@ int move_snake(int xdir, int ydir, int *apple_x, int *apple_y) {
     snake_body[0].x = new_x;
     snake_body[0].y = new_y;
     // Draw the new head.
-    DrawSnakeBody(new_x * 10 + 5, new_y * 10 + 5, GREEN);
+    DrawSnakeBody(new_x * 10 + 5, new_y * 10 + 5, LIGHT_GREEN);
 
     if (ate_apple) {
         // Generate a new apple in an empty cell.
