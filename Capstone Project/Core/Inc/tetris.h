@@ -23,11 +23,11 @@ typedef struct
     int y;        /* Vertical position in the grid */
     int shape;    /* Index for the shape (0-6) */
     int rotation; /* Rotation state (0-3) */
+    uint16_t color; /* Color of the Tetrimino */
 } Tetrimino;
 
 /* Global variable to track if a hard drop has been used */
 extern volatile int hard_drop_used;
-//static uint32_t score = 0U;
 
 /* Function Prototypes */
 

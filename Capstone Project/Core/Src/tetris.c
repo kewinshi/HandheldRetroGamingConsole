@@ -11,7 +11,6 @@
  * Adjust the include paths and macros as needed for your target platform.
  ******************************************************************************/
 
-
 #include "tetris.h"
 #include "lcd_driver.h"
 #include "input.h"
@@ -21,17 +20,8 @@
 #include <stdint.h>
 #include <stdio.h>  /* For sprintf() */
 
-/* If not defined in "tetris.h", define grid dimensions here */
-#ifndef TETRIS_ROWS
-#define TETRIS_ROWS 20U
-#endif
-
-#ifndef TETRIS_COLS
-#define TETRIS_COLS 10U
-#endif
-
-/* Global Tetris grid: 0 = empty, 1 = locked block */
-char tetris_grid[TETRIS_ROWS][TETRIS_COLS] = {0};
+/* Global Tetris grid: 0 = empty, otherwise stores the color of the locked block */
+uint16_t tetris_grid[TETRIS_ROWS][TETRIS_COLS] = {0};
 
 /* Global flag to mark if a hard drop has been used for the current piece */
 volatile int hard_drop_used = 0;
@@ -47,193 +37,64 @@ int shapes[7][4][4][4] =
 {
     /* O Tetromino */
     {
-        {
-            {0, 0, 0, 0},
-            {0, 1, 1, 0},
-            {0, 1, 1, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 0, 0, 0},
-            {0, 1, 1, 0},
-            {0, 1, 1, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 0, 0, 0},
-            {0, 1, 1, 0},
-            {0, 1, 1, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 0, 0, 0},
-            {0, 1, 1, 0},
-            {0, 1, 1, 0},
-            {0, 0, 0, 0}
-        }
+        {{0, 0, 0, 0}, {0, 1, 1, 0}, {0, 1, 1, 0}, {0, 0, 0, 0}},
+        {{0, 0, 0, 0}, {0, 1, 1, 0}, {0, 1, 1, 0}, {0, 0, 0, 0}},
+        {{0, 0, 0, 0}, {0, 1, 1, 0}, {0, 1, 1, 0}, {0, 0, 0, 0}},
+        {{0, 0, 0, 0}, {0, 1, 1, 0}, {0, 1, 1, 0}, {0, 0, 0, 0}}
     },
     /* I Tetromino */
     {
-        {
-            {0, 0, 0, 0},
-            {1, 1, 1, 1},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 0, 1, 0},
-            {0, 0, 1, 0},
-            {0, 0, 1, 0},
-            {0, 0, 1, 0}
-        },
-        {
-            {0, 0, 0, 0},
-            {0, 0, 0, 0},
-            {1, 1, 1, 1},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 1, 0, 0},
-            {0, 1, 0, 0},
-            {0, 1, 0, 0},
-            {0, 1, 0, 0}
-        }
+        {{0, 0, 0, 0}, {1, 1, 1, 1}, {0, 0, 0, 0}, {0, 0, 0, 0}},
+        {{0, 0, 1, 0}, {0, 0, 1, 0}, {0, 0, 1, 0}, {0, 0, 1, 0}},
+        {{0, 0, 0, 0}, {0, 0, 0, 0}, {1, 1, 1, 1}, {0, 0, 0, 0}},
+        {{0, 1, 0, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}}
     },
     /* T Tetromino */
     {
-        {
-            {0, 0, 0, 0},
-            {0, 1, 0, 0},
-            {1, 1, 1, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 0, 1, 0},
-            {0, 1, 1, 0},
-            {0, 0, 1, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 0, 0, 0},
-            {1, 1, 1, 0},
-            {0, 1, 0, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 1, 0, 0},
-            {1, 1, 0, 0},
-            {0, 1, 0, 0},
-            {0, 0, 0, 0}
-        }
+        {{0, 0, 0, 0}, {0, 1, 0, 0}, {1, 1, 1, 0}, {0, 0, 0, 0}},
+        {{0, 0, 1, 0}, {0, 1, 1, 0}, {0, 0, 1, 0}, {0, 0, 0, 0}},
+        {{0, 0, 0, 0}, {1, 1, 1, 0}, {0, 1, 0, 0}, {0, 0, 0, 0}},
+        {{0, 1, 0, 0}, {1, 1, 0, 0}, {0, 1, 0, 0}, {0, 0, 0, 0}}
     },
     /* S Tetromino */
     {
-        {
-            {0, 0, 0, 0},
-            {0, 1, 1, 0},
-            {1, 1, 0, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 1, 0, 0},
-            {0, 1, 1, 0},
-            {0, 0, 1, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 0, 0, 0},
-            {0, 1, 1, 0},
-            {1, 1, 0, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 1, 0, 0},
-            {0, 1, 1, 0},
-            {0, 0, 1, 0},
-            {0, 0, 0, 0}
-        }
+        {{0, 0, 0, 0}, {0, 1, 1, 0}, {1, 1, 0, 0}, {0, 0, 0, 0}},
+        {{0, 1, 0, 0}, {0, 1, 1, 0}, {0, 0, 1, 0}, {0, 0, 0, 0}},
+        {{0, 0, 0, 0}, {0, 1, 1, 0}, {1, 1, 0, 0}, {0, 0, 0, 0}},
+        {{0, 1, 0, 0}, {0, 1, 1, 0}, {0, 0, 1, 0}, {0, 0, 0, 0}}
     },
     /* Z Tetromino */
     {
-        {
-            {0, 0, 0, 0},
-            {1, 1, 0, 0},
-            {0, 1, 1, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 0, 1, 0},
-            {0, 1, 1, 0},
-            {0, 1, 0, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 0, 0, 0},
-            {1, 1, 0, 0},
-            {0, 1, 1, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 0, 1, 0},
-            {0, 1, 1, 0},
-            {0, 1, 0, 0},
-            {0, 0, 0, 0}
-        }
+        {{0, 0, 0, 0}, {1, 1, 0, 0}, {0, 1, 1, 0}, {0, 0, 0, 0}},
+        {{0, 0, 1, 0}, {0, 1, 1, 0}, {0, 1, 0, 0}, {0, 0, 0, 0}},
+        {{0, 0, 0, 0}, {1, 1, 0, 0}, {0, 1, 1, 0}, {0, 0, 0, 0}},
+        {{0, 0, 1, 0}, {0, 1, 1, 0}, {0, 1, 0, 0}, {0, 0, 0, 0}}
     },
     /* J Tetromino */
     {
-        {
-            {0, 0, 0, 0},
-            {1, 0, 0, 0},
-            {1, 1, 1, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 0, 1, 0},
-            {0, 0, 1, 0},
-            {0, 1, 1, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 0, 0, 0},
-            {1, 1, 1, 0},
-            {0, 0, 1, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 1, 1, 0},
-            {0, 1, 0, 0},
-            {0, 1, 0, 0},
-            {0, 0, 0, 0}
-        }
+        {{0, 0, 0, 0}, {1, 0, 0, 0}, {1, 1, 1, 0}, {0, 0, 0, 0}},
+        {{0, 0, 1, 0}, {0, 0, 1, 0}, {0, 1, 1, 0}, {0, 0, 0, 0}},
+        {{0, 0, 0, 0}, {1, 1, 1, 0}, {0, 0, 1, 0}, {0, 0, 0, 0}},
+        {{0, 1, 1, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}, {0, 0, 0, 0}}
     },
     /* L Tetromino */
     {
-        {
-            {0, 0, 0, 0},
-            {0, 0, 1, 0},
-            {1, 1, 1, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 1, 1, 0},
-            {0, 0, 1, 0},
-            {0, 0, 1, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 0, 0, 0},
-            {1, 1, 1, 0},
-            {1, 0, 0, 0},
-            {0, 0, 0, 0}
-        },
-        {
-            {0, 1, 0, 0},
-            {0, 1, 0, 0},
-            {0, 1, 1, 0},
-            {0, 0, 0, 0}
-        }
+        {{0, 0, 0, 0}, {0, 0, 1, 0}, {1, 1, 1, 0}, {0, 0, 0, 0}},
+        {{0, 1, 1, 0}, {0, 0, 1, 0}, {0, 0, 1, 0}, {0, 0, 0, 0}},
+        {{0, 0, 0, 0}, {1, 1, 1, 0}, {1, 0, 0, 0}, {0, 0, 0, 0}},
+        {{0, 1, 0, 0}, {0, 1, 0, 0}, {0, 1, 1, 0}, {0, 0, 0, 0}}
     }
+};
+
+/* Colors for each Tetrimino (O, I, T, S, Z, J, L) */
+static const uint16_t tetrimino_colors[7] = {
+    YELLOW,  /* O */
+    CYAN,    /* I */
+    PURPLE,  /* T */
+    GREEN,   /* S */
+    RED,     /* Z */
+    BLUE,    /* J */
+    ORANGE   /* L */
 };
 
 /* Named constants to replace magic numbers */
@@ -260,42 +121,40 @@ void draw_tetris_map(void)
     uint32_t row, col;
     LCD_Clear(BLACK);
     /* Draw left border */
-    for (row = 0U; row < 56U; row++)
+    for (row = 0U; row < 20U; row++)
     {
-        for (col = 0U; col < 3U; col++)
+        for (col = 0U; col < 1U; col++)
         {
-            DrawWall5((int)(col * 5), (int)(row * 5), GREY);
+            DrawWall14x15((int)(col * 14), (int)(row * 14), GREY);
         }
     }
     /* Draw right border */
-    for (row = 0U; row < 56U; row++)
+    for (row = 0U; row < 20U; row++)
     {
-        for (col = 0U; col < 3U; col++)
+        for (col = 0U; col < 1U; col++)
         {
-            DrawWall5((int)(155 + col * 5), (int)(row * 5), GREY);
+            DrawWall14x15((int)(155 + col * 14), (int)(row * 14), GREY);
         }
     }
     /* Draw bottom border */
-    for (row = 0U; row < 4U; row++)
+    for (row = 0U; row < 3U; row++)
     {
-        for (col = 0U; col < 28U; col++)
+        for (col = 0U; col < 13U; col++)
         {
-            DrawWall((int)(15 + col * 10), (int)(280 + row * 10), GREY);
+            DrawWall15x14((int)(1 + col * 14), (int)(280 + row * 15), GREY);
         }
     }
 }
-
 
 /*
  * DrawSmallBlock
  *
  * Draws a small block (7x7 pixels) at the given coordinates.
  */
-static void DrawSmallBlock(int x, int y, uint16_t color) {
-
-	clear_area((uint16_t) x, (uint16_t) y, (uint16_t) (x + 7 - 1),
-			(uint16_t) (y + 7 - 1), color);
-
+static void DrawSmallBlock(int x, int y, uint16_t color)
+{
+    clear_area((uint16_t)x, (uint16_t)y, (uint16_t)(x + 7 - 1),
+               (uint16_t)(y + 7 - 1), color);
 }
 
 /*
@@ -314,7 +173,7 @@ static void update_status_display(const Tetrimino *next_piece)
     /* Display label "Next:" */
     LCD_DrawString(100, 295, "Next:", WHITE, GREY, 1);
 
-    /* Draw the next piece preview in a 4x4 grid starting at (100,285) */
+    /* Draw the next piece preview in a 4x4 grid starting at (140,285) */
     for (int m = 0; m < 4; m++)
     {
         for (int n = 0; n < 4; n++)
@@ -323,14 +182,13 @@ static void update_status_display(const Tetrimino *next_piece)
             int y = 285 + m * 8;
             if (shapes[next_piece->shape][next_piece->rotation][m][n] != 0)
             {
-                DrawSmallBlock(x, y, RED);
+                DrawSmallBlock(x, y, next_piece->color);
             }
             else
             {
-                /* Clear the area from (x, y) to (x+6, y+6) */
-                clear_area((uint16_t)x, (uint16_t)y, (uint16_t)(x + 7 - 1), (uint16_t)(y + 7 - 1), GREY);
+                clear_area((uint16_t)x, (uint16_t)y, (uint16_t)(x + 7 - 1),
+                           (uint16_t)(y + 7 - 1), GREY);
             }
-
         }
     }
 }
@@ -351,7 +209,7 @@ static void redraw_rows(int start_row, int end_row)
         {
             x = (uint16_t)(col * 14 + 15);
             y = (uint16_t)(row * 14);
-            DrawTetrisBlock(x, y, (tetris_grid[row][col] != 0) ? GREEN : BLACK);
+            DrawTetrisBlock(x, y, (tetris_grid[row][col] != 0) ? tetris_grid[row][col] : BLACK);
         }
     }
 }
@@ -371,7 +229,7 @@ static void redraw_grid(void)
         {
             x = (uint16_t)(col * 14 + 15);
             y = (uint16_t)(row * 14);
-            DrawTetrisBlock(x, y, (tetris_grid[row][col] != 0) ? GREEN : BLACK);
+            DrawTetrisBlock(x, y, (tetris_grid[row][col] != 0) ? tetris_grid[row][col] : BLACK);
         }
     }
 }
@@ -474,16 +332,14 @@ static int is_game_over(void)
  */
 static void handle_game_over(void)
 {
-	LCD_Clear(BLACK);
-	if (score > top_score) {
-		LCD_DrawString(50, 2 * 20, "High Score!", BLACK, RED, 3);
-		top_score = score;
-	}
-    char gameOverStr[10];
+    LCD_Clear(BLACK);
+    if (score > top_score)
+    {
+        LCD_DrawString(50, 2 * 20, "High Score!", BLACK, RED, 3);
+        top_score = score;
+    }
     char scoreStr[20];
     char topScoreStr[20];
-    LCD_Clear(BLACK);
-
     sprintf(scoreStr, "Score: %lu", (unsigned long)score);
     sprintf(topScoreStr, "High Score: %lu", (unsigned long)top_score);
     LCD_DrawString(50, 3 * 20, "Game Over.", WHITE, BLACK, 2.5);
@@ -529,10 +385,11 @@ void play_tetris(void)
     }
 
     /* Initialize next_piece */
-    next_piece.x = ((int)TETRIS_COLS / 2) - 1; /* Not used in preview */
+    next_piece.x = ((int)TETRIS_COLS / 2) - 1;
     next_piece.y = INITIAL_PIECE_Y;
     next_piece.shape = (rand() % 7);
     next_piece.rotation = 0;
+    next_piece.color = tetrimino_colors[next_piece.shape];
 
     /* current_piece becomes next_piece and generate a new next_piece */
     current_piece = next_piece;
@@ -540,6 +397,7 @@ void play_tetris(void)
     next_piece.y = INITIAL_PIECE_Y;
     next_piece.shape = (rand() % 7);
     next_piece.rotation = 0;
+    next_piece.color = tetrimino_colors[next_piece.shape];
     update_status_display(&next_piece);
 
     /* Main game loop */
@@ -606,8 +464,8 @@ void play_tetris(void)
                         (col >= 0) && (col < (int)TETRIS_COLS))
                     {
                         DrawTetrisBlock((int)(col * 14 + 15),
-                                          (int)(row * 14),
-                                          (tetris_grid[row][col] != 0) ? GREEN : BLACK);
+                                        (int)(row * 14),
+                                        (tetris_grid[row][col] != 0) ? tetris_grid[row][col] : BLACK);
                     }
                 }
             }
@@ -621,8 +479,8 @@ void play_tetris(void)
                 (col >= 0) && (col < (int)TETRIS_COLS))
             {
                 DrawTetrisBlock((int)(col * 14 + 15),
-                                  (int)(row * 14),
-                                  RED);
+                                (int)(row * 14),
+                                current_piece.color);
             }
         }
 
@@ -677,6 +535,7 @@ void play_tetris(void)
                 next_piece.y = INITIAL_PIECE_Y;
                 next_piece.shape = (rand() % 7);
                 next_piece.rotation = 0;
+                next_piece.color = tetrimino_colors[next_piece.shape];
                 hard_drop_used = 0;
                 update_status_display(&next_piece);
 
@@ -752,7 +611,7 @@ void lock_piece(Tetrimino *piece)
                 if ((x >= 0) && (x < (int)TETRIS_COLS) &&
                     (y >= 0) && (y < (int)TETRIS_ROWS))
                 {
-                    tetris_grid[y][x] = 1;
+                    tetris_grid[y][x] = piece->color;
                 }
             }
         }

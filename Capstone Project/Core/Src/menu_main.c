@@ -5,7 +5,7 @@
 #include "snake.h"
 #include "tetris.h"
 
-#define line_height 20
+#define LINE_HEIGHT 20
 void displayStartup() {
 	LCD_Clear(BLACK);
 	LCD_Init();
@@ -24,19 +24,19 @@ void displayStartup() {
 }
 void displayMenu() {
 	LCD_Clear(BLACK);  // Clear the screen
-
+//	drawSafeZones(); testing safe zones
 	// Always display the header
 	initStarField();
-	LCD_DrawString(50, 3 * line_height, "WELCOME", BLUE, BLACK, 3);
-	LCD_DrawString(50, 7 * line_height, "Snake", LIGHT_GREEN, BLACK, 1.5);
-	LCD_DrawString(50, 9 * line_height, "Pacman", BLUE, BLACK, 1.5);
-	LCD_DrawString(50, 11 * line_height, "Tetris", RED, BLACK, 1.5);
+	LCD_DrawString(50, 3 * LINE_HEIGHT, "WELCOME", BLUE, BLACK, 3);
+	LCD_DrawString(50, 7 * LINE_HEIGHT, "Snake", LIGHT_GREEN, BLACK, 1.5);
+	LCD_DrawString(50, 9 * LINE_HEIGHT, "Pacman", BLUE, BLACK, 1.5);
+	LCD_DrawString(50, 11 * LINE_HEIGHT, "Tetris", RED, BLACK, 1.5);
 	int input = -1;
 	int prev_gamechoice = -1;
 	int game_choice = 0;
 
 	// initialize snake logo
-	LCD_DrawImage(110, 6.5 * line_height, 1, 0);
+	LCD_DrawImage(110, 6.5 * LINE_HEIGHT, 1, 0);
 	while (1) {
 		if (input == 1 && game_choice == 0) {
 			play_snake();
@@ -59,18 +59,15 @@ void displayMenu() {
 		}
 
 		if (game_choice == 0 && input != -1) {
-//			LCD_DrawString(140, 7 * line_height, " <", WHITE, BLACK, 2);
-			LCD_DrawImage(110, 6.5 * line_height, 1, 0);
-			clear_area(140, 8 * line_height, 170, 14 * line_height, BLACK);
+			LCD_DrawImage(110, 6.7 * LINE_HEIGHT, 1, 0);
+			clear_area(140, 8 * LINE_HEIGHT, 170, 14 * LINE_HEIGHT, BLACK);
 		} else if (game_choice == 1 && input != -1) {
-//			LCD_DrawString(140, 9 * line_height, " <", WHITE, BLACK, 2);
-			LCD_DrawImage(110, 8.5 * line_height, 1, 1);
-			clear_area(140, 6.5 * line_height, 170, 8 * line_height - 1, BLACK);
-			clear_area(140, 10.5 * line_height, 170, 12 * line_height - 1, BLACK);
+			LCD_DrawImage(110, 8.6 * LINE_HEIGHT, 1, 1);
+			clear_area(140, 6.5 * LINE_HEIGHT, 170, 8 * LINE_HEIGHT - 1, BLACK);
+			clear_area(140, 10.5 * LINE_HEIGHT, 170, 12 * LINE_HEIGHT - 1, BLACK);
 		} else if (game_choice == 2 && input != -1) {
-//			LCD_DrawString(140, 11 * line_height, " <", WHITE, BLACK, 2);
-			clear_area(140, 6.5 * line_height, 170, 10 * line_height - 1, BLACK);
-			LCD_DrawImage(110, 10.5 * line_height, 1, 2);
+			clear_area(140, 6.5 * LINE_HEIGHT, 170, 10 * LINE_HEIGHT - 1, BLACK);
+			LCD_DrawImage(110, 10.7 * LINE_HEIGHT, 1, 2);
 		}
 		for (int i = 0; i < 5; i++) {
 			input = get_input();

@@ -318,18 +318,74 @@ void LCD_Drawpixel(uint16_t x, uint16_t y, uint16_t color) {
 }
 
 // Draw a 10x10 wall (filled rectangle) starting at (x, y).
-void DrawWall(uint16_t x, uint16_t y, uint16_t color) {
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
+void DrawWall(uint16_t x, uint16_t y, uint16_t color)
+{
+    // Draw the DARK_GREY outline (10x10 perimeter)
+    for (int j = 0; j < 10; j++)
+    {
+        LCD_Drawpixel(x + j, y, DARK_GREY);          // Top edge
+        LCD_Drawpixel(x + j, y + 9, DARK_GREY);      // Bottom edge
+    }
+    for (int i = 0; i < 10; i++)
+    {
+        LCD_Drawpixel(x, y + i, DARK_GREY);          // Left edge
+        LCD_Drawpixel(x + 9, y + i, DARK_GREY);      // Right edge
+    }
+
+    // Fill the inner 8x8 area with the specified color
+    for (int i = 1; i < 9; i++)
+    {
+        for (int j = 1; j < 9; j++)
+        {
             LCD_Drawpixel(x + j, y + i, color);
         }
     }
 }
 
-// Draw a 5x5 wall (filled rectangle) starting at (x, y).
-void DrawWall5(uint16_t x, uint16_t y, uint16_t color) {
-    for (int i = 0; i < 5; i++) {
-        for (int j = 0; j < 5; j++) {
+// Draw a 14x15 wall (filled rectangle) with a DARK_GREY outline starting at (x, y).
+void DrawWall14x15(uint16_t x, uint16_t y, uint16_t color)
+{
+    // Draw the DARK_GREY outline (14x15 perimeter)
+    for (int j = 0; j < 15; j++)
+    {
+        LCD_Drawpixel(x + j, y, DARK_GREY);          // Top edge
+        LCD_Drawpixel(x + j, y + 13, DARK_GREY);     // Bottom edge
+    }
+    for (int i = 0; i < 14; i++)
+    {
+        LCD_Drawpixel(x, y + i, DARK_GREY);          // Left edge
+        LCD_Drawpixel(x + 14, y + i, DARK_GREY);     // Right edge
+    }
+
+    // Fill the inner 12x13 area with the specified color
+    for (int i = 1; i < 13; i++)
+    {
+        for (int j = 1; j < 14; j++)
+        {
+            LCD_Drawpixel(x + j, y + i, color);
+        }
+    }
+}
+
+void DrawWall15x14(uint16_t x, uint16_t y, uint16_t color)
+{
+    // Draw the DARK_GREY outline (14x15 perimeter)
+    for (int j = 0; j < 14; j++)
+    {
+        LCD_Drawpixel(x + j, y, DARK_GREY);          // Top edge
+        LCD_Drawpixel(x + j, y + 13, DARK_GREY);     // Bottom edge
+    }
+    for (int i = 0; i < 15; i++)
+    {
+        LCD_Drawpixel(x, y + i, DARK_GREY);          // Left edge
+        LCD_Drawpixel(x + 14, y + i, DARK_GREY);     // Right edge
+    }
+
+    // Fill the inner 12x13 area with the specified color
+    for (int i = 1; i < 14; i++)
+    {
+        for (int j = 1; j < 13; j++)
+        {
             LCD_Drawpixel(x + j, y + i, color);
         }
     }
@@ -338,7 +394,7 @@ void DrawWall5(uint16_t x, uint16_t y, uint16_t color) {
 // Draw a 14×14 filled rectangle (used for Tetris blocks)
 void DrawTetrisBlock(uint16_t x, uint16_t y, uint16_t color) {
     // Set borderColor based on the color value:
-    uint16_t borderColor = (color == BLACK) ? BLACK : WHITE;
+    uint16_t borderColor = (color == BLACK) ? BLACK : DARK_GREY;
 
     for (int i = 0; i < 14; i++) {
         for (int j = 0; j < 14; j++) {
@@ -618,33 +674,54 @@ void LCD_DrawImage(uint16_t startX, uint16_t startY, uint8_t scale, uint8_t type
 }
 
 Star stars[NUM_STARS];
+
+static uint16_t get_safe_y(void) {
+    // Pick a random safe zone
+    int zone = rand() % NUM_SAFE_ZONES;
+    uint16_t y_min = safe_zones[zone].y_min;
+    uint16_t y_max = safe_zones[zone].y_max;
+    // Return a random y within that zone
+    return y_min + (rand() % (y_max - y_min + 1));
+}
+
 // Initialize the star field with random positions and speeds
 void initStarField(void) {
     for (int i = 0; i < NUM_STARS; i++) {
         stars[i].x = rand() % LCD_WIDTH;
-        stars[i].y = rand() % LCD_HEIGHT;
-        stars[i].speed = 1 + (rand() % 3);  // Speed between 1 and 3
+        stars[i].y = get_safe_y(); // Use safe y-position
+        stars[i].speed = 1 + (rand() % 3); // Speed between 1 and 3
     }
 }
 
 // Update and redraw the star field
 void updateStarField(void) {
-    // For each star:
     for (int i = 0; i < NUM_STARS; i++) {
-        // Erase the star at its current position by drawing the background color.
+        // Erase the star at its current position
         LCD_Drawpixel(stars[i].x, stars[i].y, BACKGROUND_COLOR);
 
-        // Update the star's horizontal position by its speed.
+        // Update the star's horizontal position
         stars[i].x += stars[i].speed;
 
-        // Wrap around if the star goes off the right edge of the screen.
+        // Wrap around if the star goes off the right edge
         if (stars[i].x >= LCD_WIDTH) {
             stars[i].x = 0;
-            stars[i].y = rand() % LCD_HEIGHT; // Optionally, set a new random vertical position.
+            stars[i].y = get_safe_y(); // Reset to a safe y-position
         }
 
-        // Draw the star at its new position.
+        // Draw the star at its new position
         LCD_Drawpixel(stars[i].x, stars[i].y, STAR_COLOR);
+    }
+}
+
+void drawSafeZones(void) {
+    for (int i = 0; i < NUM_SAFE_ZONES; i++) {
+        uint16_t y_min = safe_zones[i].y_min;
+        uint16_t y_max = safe_zones[i].y_max;
+        for (uint16_t y = y_min; y <= y_max; y++) {
+            for (uint16_t x = 0; x < LCD_WIDTH; x++) {
+                LCD_Drawpixel(x, y, BLUE);
+            }
+        }
     }
 }
 

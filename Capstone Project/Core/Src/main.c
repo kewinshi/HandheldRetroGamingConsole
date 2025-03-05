@@ -129,7 +129,7 @@ int main(void)
 //	    HAL_Delay(5); // 5ms delay
 //	}
 
-
+  play_tetris();
   /* USER CODE END 2 */
 
   /* Infinite loop */

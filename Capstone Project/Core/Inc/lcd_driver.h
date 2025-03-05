@@ -23,9 +23,12 @@ extern SPI_HandleTypeDef hspi1;
 #define YELLOW  0xFFE0
 #define MAROON 0x8000
 #define LIGHT_GREEN 0x07E0
-#define GREEN 0x03E0
+#define GREEN 0x07E0
 #define DARK_GREEN 0x01E0
 #define DARK_GREY 0x4208  // Darker than GREY but not full black
+#define CYAN    0x07FF  // RGB565: (0, 63, 31)
+#define PURPLE  0x801F  // RGB565: (16, 0, 31)
+#define ORANGE  0xFC20  // RGB565: (31, 32, 0)
 
 #define LCD_WIDTH    240
 #define LCD_HEIGHT   320
@@ -35,6 +38,27 @@ typedef enum {
     MENU_ITEM_1,
     MENU_ITEM_2
 } MenuItem;
+
+// Structure for a star
+typedef struct {
+    int x;
+    int y;
+    int speed;  // Vertical speed (e.g., 1 to 3 pixels per update)
+} Star;
+
+// Safe y-ranges for stars
+static const struct {
+    uint16_t y_min;
+    uint16_t y_max;
+} safe_zones[] = {
+    {0, 59},      // Above "WELCOME"
+    {59 + 23, 125}, // Between "WELCOME" and "Snake"
+	{150, 170}, // Between "Snake" and "Pac-Man"
+	{190, 200},   // Between "Pac-Man and Tetris"
+    {230, 319}    // Below "Tetris"
+};
+#define NUM_SAFE_ZONES (sizeof(safe_zones) / sizeof(safe_zones[0]))
+
 
 extern MenuItem currentMenuItem;
 
@@ -69,17 +93,11 @@ void LCD_DrawAMLogo(void);
 void LCD_DrawImage(uint16_t startX, uint16_t startY, uint8_t scale, uint8_t type);
 void initStarField(void);
 void updateStarField(void);
+void drawSafeZones(void);
 
 #define NUM_STARS 10
 #define STAR_COLOR WHITE
 #define BACKGROUND_COLOR BLACK
-
-// Structure for a star
-typedef struct {
-    int x;
-    int y;
-    int speed;  // Vertical speed (e.g., 1 to 3 pixels per update)
-} Star;
 
 // Declare the global star array as extern
 extern Star stars[NUM_STARS];
