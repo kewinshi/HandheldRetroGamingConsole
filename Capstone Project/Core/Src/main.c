@@ -128,8 +128,6 @@ int main(void)
 //	    toggle_PA11();  // Toggle PA                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       11
 //	    HAL_Delay(5); // 5ms delay
 //	}
-
-  play_tetris();
   /* USER CODE END 2 */
 
   /* Infinite loop */

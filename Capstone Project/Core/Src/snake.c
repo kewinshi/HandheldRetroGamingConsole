@@ -17,7 +17,7 @@ int top_length = 0;
 void play_snake() {
     draw_snake_map();
     int input = 3;
-    int xdir = 1;  // initial direction: right
+    int xdir = 1;  // Initial direction: right
     int ydir = 0;
 
     // Initialize snake with a length of 3.
@@ -33,9 +33,9 @@ void play_snake() {
     snake_body[2].x = center_x - 2;
     snake_body[2].y = center_y;
 
-    // Draw the initial snake.
+    // Draw the initial snake with direction awareness, only head (i == 0) gets eyes.
     for (int i = 0; i < snake_length; i++) {
-        DrawSnakeBody(snake_body[i].x * 10 + 5, snake_body[i].y * 10 + 5, LIGHT_GREEN);
+        DrawSnakeBody(snake_body[i].x * 10 + 5, snake_body[i].y * 10 + 5, LIGHT_GREEN, (i == 0), xdir, ydir);
     }
 
     // Generate the first apple ensuring it does not appear on the snake.
@@ -59,16 +59,16 @@ void play_snake() {
         // Poll input several times before moving.
         for (int i = 0; i < 10; i++) {
             input = get_input();
-            if (input == 2 && ydir != 1) {       // up
+            if (input == 2 && ydir != 1) {       // Up
                 xdir = 0;
                 ydir = -1;
-            } else if (input == 3 && xdir != 1) { // left
+            } else if (input == 3 && xdir != 1) { // Left
                 xdir = -1;
                 ydir = 0;
-            } else if (input == 4 && xdir != -1) { // right
+            } else if (input == 4 && xdir != -1) { // Right
                 xdir = 1;
                 ydir = 0;
-            } else if (input == 5 && ydir != -1) { // down
+            } else if (input == 5 && ydir != -1) { // Down
                 xdir = 0;
                 ydir = 1;
             }
@@ -77,32 +77,30 @@ void play_snake() {
 
         // Move the snake; if move_snake returns 0, game over.
         if (!move_snake(xdir, ydir, &apple_x, &apple_y)) {
-            // Optionally, draw a "Game Over" message here.
-        	LCD_Clear(BLACK);
-        	if (snake_length > top_length) {
-        		top_length = snake_length;
-        		LCD_DrawString(50, 3 * 20, "HIGH SCORE!", RED, BLACK, 2.5);
-        	} else {
-        		LCD_DrawString(50, 3 * 20, "Game Over.", WHITE, BLACK, 2.5);
-        	}
+            LCD_Clear(BLACK);
+            if (snake_length > top_length) {
+                top_length = snake_length;
+                LCD_DrawString(50, 3 * 20, "HIGH SCORE!", RED, BLACK, 2.5);
+            } else {
+                LCD_DrawString(50, 3 * 20, "Game Over.", WHITE, BLACK, 2.5);
+            }
 
-        	char score_str[20];
-        	char top_score_str[20];
-        	sprintf(top_score_str, "High Score:%d", top_length);
-			sprintf(score_str, "Score:%d", snake_length);
-			LCD_DrawString(50, 5 * 20, score_str, WHITE, BLACK, 2);
-			LCD_DrawString(50, 7 * 20, top_score_str, WHITE, BLACK, 2);
-			while (get_input() == INVALID_INPUT) {
-				HAL_Delay(100);
-			}
-			break;
+            char score_str[20];
+            char top_score_str[20];
+            sprintf(top_score_str, "High Score:%d", top_length);
+            sprintf(score_str, "Score:%d", snake_length);
+            LCD_DrawString(50, 5 * 20, score_str, WHITE, BLACK, 2);
+            LCD_DrawString(50, 7 * 20, top_score_str, WHITE, BLACK, 2);
+            while (get_input() == INVALID_INPUT) {
+                HAL_Delay(100);
+            }
+            break;
         }
     }
 }
 
 void draw_snake_map() {
-    // Optionally clear the LCD:
-     LCD_Clear(BLACK);
+    LCD_Clear(BLACK);
 
     uint16_t color = WHITE;   // White for border walls.
     // Draw the border walls.
@@ -111,7 +109,7 @@ void draw_snake_map() {
             if (row == 0 || row == ROWS - 1 || col == 0 || col == COLS - 1) {
                 uint16_t x = col * 10;
                 uint16_t y = row * 10;
-                DrawWall(x, y, color); // weird shift going on where it sometimes requires x offset
+                DrawWall(x, y, color);
             }
         }
     }
@@ -151,9 +149,13 @@ int move_snake(int xdir, int ydir, int *apple_x, int *apple_y) {
         }
         snake_length++;
     } else {
-        // Erase the tail from display.
-        DrawSnakeBody(snake_body[snake_length - 1].x * 10 + 5,
-                      snake_body[snake_length - 1].y * 10 + 5, BLACK);
+        // Erase the tail completely by drawing a black 10x10 block.
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                LCD_Drawpixel(snake_body[snake_length - 1].x * 10 + 5 + j - 5,
+                              snake_body[snake_length - 1].y * 10 + 5 + i - 5, BLACK);
+            }
+        }
         // Shift segments.
         for (int i = snake_length - 1; i > 0; i--) {
             snake_body[i] = snake_body[i - 1];
@@ -163,8 +165,12 @@ int move_snake(int xdir, int ydir, int *apple_x, int *apple_y) {
     // Insert the new head.
     snake_body[0].x = new_x;
     snake_body[0].y = new_y;
-    // Draw the new head.
-    DrawSnakeBody(new_x * 10 + 5, new_y * 10 + 5, LIGHT_GREEN);
+    // Draw the new head with direction (only head gets eyes).
+    DrawSnakeBody(new_x * 10 + 5, new_y * 10 + 5, LIGHT_GREEN, 1, xdir, ydir);
+    // Redraw the segment just behind the head as a body segment (no eyes).
+    if (snake_length > 1) {
+        DrawSnakeBody(snake_body[1].x * 10 + 5, snake_body[1].y * 10 + 5, LIGHT_GREEN, 0, xdir, ydir);
+    }
 
     if (ate_apple) {
         // Generate a new apple in an empty cell.

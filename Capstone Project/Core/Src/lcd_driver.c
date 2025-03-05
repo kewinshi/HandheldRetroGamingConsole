@@ -410,13 +410,64 @@ void DrawTetrisBlock(uint16_t x, uint16_t y, uint16_t color) {
 
 
 
-// Draw a snake body segment as a filled circle (radius 5).
-void DrawSnakeBody(uint16_t cx, uint16_t cy, uint16_t color) {
-    int radius = 5;
-    for (int dy = -radius; dy <= radius; dy++) {
-        for (int dx = -radius; dx <= radius; dx++) {
-            if ((dx * dx + dy * dy) <= (radius * radius)) {
-                LCD_Drawpixel(cx + dx, cy + dy, color);
+// Draw a snake body segment as a 10x10 square with a DARK_GREY border and gradient fill.
+// If is_head is 1, add larger red eyes (2x2 blocks) based on direction (xdir, ydir).
+void DrawSnakeBody(uint16_t x, uint16_t y, uint16_t color, int is_head, int xdir, int ydir)
+{
+    uint16_t light_color = LIGHT_GREEN;  // Center of gradient
+    uint16_t dark_color = GREEN;         // Edges of gradient
+
+    // Draw a 10x10 block
+    for (int i = 0; i < 10; i++)
+    {
+        for (int j = 0; j < 10; j++)
+        {
+            int dx = j - 5;  // Center at (5,5)
+            int dy = i - 5;
+            if (i == 0 || i == 9 || j == 0 || j == 9)
+            {
+                // Draw DARK_GREY border
+                LCD_Drawpixel(x + dx, y + dy, DARK_GREY);
+            }
+            else if (is_head && xdir == 1 &&  // Right direction
+                     ((dx >= 2 && dx <= 3 && dy >= -2 && dy <= -1) ||  // Top eye (2x2)
+                      (dx >= 2 && dx <= 3 && dy >= 1 && dy <= 2)))     // Bottom eye (2x2)
+            {
+                // Larger red eyes for head moving right
+                LCD_Drawpixel(x + dx, y + dy, RED);
+            }
+            else if (is_head && xdir == -1 &&  // Left direction
+                     ((dx >= -3 && dx <= -2 && dy >= -2 && dy <= -1) ||  // Top eye (2x2)
+                      (dx >= -3 && dx <= -2 && dy >= 1 && dy <= 2)))     // Bottom eye (2x2)
+            {
+                // Larger red eyes for head moving left
+                LCD_Drawpixel(x + dx, y + dy, RED);
+            }
+            else if (is_head && ydir == -1 &&  // Up direction
+                     ((dx >= -3 && dx <= -2 && dy >= -3 && dy <= -2) ||  // Left eye (2x2)
+                      (dx >= 1 && dx <= 2 && dy >= -3 && dy <= -2)))     // Right eye (2x2)
+            {
+                // Larger red eyes for head moving up
+                LCD_Drawpixel(x + dx, y + dy, RED);
+            }
+            else if (is_head && ydir == 1 &&  // Down direction
+                     ((dx >= -3 && dx <= -2 && dy >= 1 && dy <= 2) ||  // Left eye (2x2)
+                      (dx >= 1 && dx <= 2 && dy >= 1 && dy <= 2)))     // Right eye (2x2)
+            {
+                // Larger red eyes for head moving down
+                LCD_Drawpixel(x + dx, y + dy, RED);
+            }
+            else
+            {
+                // Gradient fill: lighter in center, darker near edges
+                if (abs(dx) + abs(dy) < 4)  // Center area
+                {
+                    LCD_Drawpixel(x + dx, y + dy, light_color);
+                }
+                else  // Near edges
+                {
+                    LCD_Drawpixel(x + dx, y + dy, dark_color);
+                }
             }
         }
     }

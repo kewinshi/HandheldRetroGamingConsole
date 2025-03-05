@@ -85,7 +85,7 @@ void LCD_DrawString(uint16_t x, uint16_t y, const char *str, uint16_t color, uin
 void DrawWall(uint16_t x, uint16_t y, uint16_t color);
 void DrawWall5(uint16_t x, uint16_t y, uint16_t color);
 void DrawTetrisBlock(uint16_t x, uint16_t y, uint16_t color);
-void DrawSnakeBody(uint16_t cx, uint16_t cy, uint16_t color);
+void DrawSnakeBody(uint16_t x, uint16_t y, uint16_t color, int is_head, int xdir, int ydir);
 void DrawApple(uint16_t cx, uint16_t cy, uint16_t color);
 void LCD_FillRect(int x, int y, int w, int h, uint16_t color);
 void LCD_DrawLine(int x0, int y0, int x1, int y1, uint16_t color);
