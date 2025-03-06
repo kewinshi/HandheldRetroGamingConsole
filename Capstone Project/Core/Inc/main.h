@@ -69,6 +69,8 @@ void Error_Handler(void);
 #define btn_right_GPIO_Port GPIOC
 #define btn_down_Pin GPIO_PIN_5
 #define btn_down_GPIO_Port GPIOC
+#define BL_Pin GPIO_PIN_7
+#define BL_GPIO_Port GPIOC
 #define DC_Pin GPIO_PIN_8
 #define DC_GPIO_Port GPIOA
 #define RST_Pin GPIO_PIN_9

@@ -74,7 +74,6 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USART2_UART_Init(void);
-void print(char *str);
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
 
@@ -131,13 +130,13 @@ int main(void)
   /* USER CODE END 2 */
 
   /* Infinite loop */
-	/* USER CODE BEGIN WHILE */
+  /* USER CODE BEGIN WHILE */
 	while (1) {
-		/* USER CODE END WHILE */
+    /* USER CODE END WHILE */
 		displayMenu();
-		/* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
 	}
-	/* USER CODE END 3 */
+  /* USER CODE END 3 */
 }
 
 /**
@@ -267,6 +266,9 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(BL_GPIO_Port, BL_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, DC_Pin|RST_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
@@ -282,6 +284,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : BL_Pin */
+  GPIO_InitStruct.Pin = BL_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(BL_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : DC_Pin RST_Pin buzzer_Pin */
   GPIO_InitStruct.Pin = DC_Pin|RST_Pin|buzzer_Pin;
