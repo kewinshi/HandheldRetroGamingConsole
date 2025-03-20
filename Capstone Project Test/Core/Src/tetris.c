@@ -347,7 +347,7 @@ static void handle_game_over(void)
     LCD_DrawString(50, 7 * 20, topScoreStr, WHITE, BLACK, 2.5);
     while (get_input() == INVALID_INPUT)
     {
-        HAL_Delay(75);
+        HAL_Delay(100);
     }
 }
 
@@ -359,8 +359,7 @@ static void handle_game_over(void)
 void play_tetris(void)
 {
     uint32_t i, j, m, n, idx;
-    int curr_input = -1;
-    int prev_input = -1;
+    int curr_input;
     int drop_counter = 0;
     int game_over = 0;
     int new_positions[4][2];
@@ -404,9 +403,7 @@ void play_tetris(void)
     /* Main game loop */
     while (game_over == 0)
     {
-    	prev_input = curr_input;
         curr_input = get_input();
-
         if (curr_input != INVALID_INPUT)
         {
             if (curr_input == INPUT_MOVE_LEFT)
@@ -417,7 +414,7 @@ void play_tetris(void)
             {
                 move_piece(&current_piece, 1);
             }
-            else if (curr_input == INPUT_ROTATE && curr_input != prev_input)
+            else if (curr_input == INPUT_ROTATE)
             {
                 rotate_piece(&current_piece);
             }
@@ -426,7 +423,7 @@ void play_tetris(void)
                 hard_drop(&current_piece);
             }
         }
-        HAL_Delay(100);
+        HAL_Delay(10);
 
         idx = 0U;
         for (m = 0U; m < 4U; m++)

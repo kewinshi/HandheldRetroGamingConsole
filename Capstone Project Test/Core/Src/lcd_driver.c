@@ -22,18 +22,11 @@ void LCD_WriteData(uint8_t data) {
     HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET);
 }
 
-// Same as LCD_WriteData but sends as batch
 void LCD_WriteDataBlock(uint8_t *data, uint16_t length) {
     HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET); // Data mode
     HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(&hspi1, data, length, HAL_MAX_DELAY);
     HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET);
-}
-
-// Wrapper for LCD_WriteDataBlock but includes an offset of 35
-void LCD_WriteBlockWithOffset(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint8_t *data) {
-    LCD_SetWindow(x + 35, y, x + w - 1 + 35, y + h - 1);
-    LCD_WriteDataBlock(data, w * h * 2); // 2 bytes per pixel
 }
 
 // Set the LCD display window.
@@ -407,47 +400,21 @@ void DrawWall15x14(uint16_t x, uint16_t y, uint16_t color)
 
 // Draw a 14×14 filled rectangle (used for Tetris blocks)
 void DrawTetrisBlock(uint16_t x, uint16_t y, uint16_t color) {
+    // Set borderColor based on the color value:
     uint16_t borderColor = (color == BLACK) ? BLACK : DARK_GREY;
-    uint8_t data[14 * 14 * 2]; // 14x14 block, 2 bytes per pixel
+
     for (int i = 0; i < 14; i++) {
         for (int j = 0; j < 14; j++) {
-            uint16_t c = (i == 0 || i == 13 || j == 0 || j == 13) ? borderColor : color;
-            data[(i * 14 + j) * 2] = c >> 8;
-            data[(i * 14 + j) * 2 + 1] = c & 0xFF;
+            if (i == 0 || i == 13 || j == 0 || j == 13) {
+                LCD_Drawpixel(x + j, y + i, borderColor);
+            } else {
+                LCD_Drawpixel(x + j, y + i, color);
+            }
         }
     }
-    LCD_WriteBlockWithOffset(x, y, 14, 14, data);
 }
 
-void DrawTetrisBlockOutline(int x, int y, uint16_t color) {
-    uint8_t data[14 * 14 * 2]; // 14x14 block, 2 bytes per pixel (16-bit color)
-    uint16_t i, j;
 
-    /* Initialize buffer: all pixels transparent (BLACK), then set outline */
-    for (i = 0; i < 14 * 14 * 2; i += 2) {
-        data[i] = BLACK >> 8;      /* High byte */
-        data[i + 1] = BLACK & 0xFF; /* Low byte */
-    }
-
-    /* Top and bottom edges */
-    for (j = 0; j < 14; j++) {
-        data[j * 2] = color >> 8;           /* Top row */
-        data[j * 2 + 1] = color & 0xFF;
-        data[(13 * 14 + j) * 2] = color >> 8; /* Bottom row */
-        data[(13 * 14 + j) * 2 + 1] = color & 0xFF;
-    }
-
-    /* Left and right edges (excluding corners to avoid overlap) */
-    for (i = 1; i < 13; i++) {
-        data[i * 14 * 2] = color >> 8;           /* Left column */
-        data[i * 14 * 2 + 1] = color & 0xFF;
-        data[(i * 14 + 13) * 2] = color >> 8;    /* Right column */
-        data[(i * 14 + 13) * 2 + 1] = color & 0xFF;
-    }
-
-    /* Write the outline to the LCD */
-    LCD_WriteBlockWithOffset((uint16_t)x, (uint16_t)y, 14, 14, data);
-}
 
 
 // Draw a snake body segment as a 10x10 square with a DARK_GREY border and gradient fill.
