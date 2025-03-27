@@ -736,8 +736,27 @@ static const uint8_t pixel_array_space_invader[16][16] = {
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}  // Padding row
 };
 
+static const uint8_t pixel_array_pong[16][16] = {
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0, 0},
+    {0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0},
+    {0, 0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0},
+    {0, 0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0},
+    {0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0},
+    {0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0},
+    {0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0},
+    {0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0},
+    {0, 0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0},
+    {0, 0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0},
+    {0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0},
+    {0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+};
+
 void LCD_DrawImage(uint16_t startX, uint16_t startY, uint8_t scale, uint8_t type) {
-    // Map pixel values (0-7) to corresponding colors
+    // Map pixel values (0-8) to corresponding colors
     uint16_t colors[] = {
         BLACK,        // 0
         LIGHT_GREEN,  // 1
@@ -747,7 +766,7 @@ void LCD_DrawImage(uint16_t startX, uint16_t startY, uint8_t scale, uint8_t type
         DARK_GREY,    // 5
         YELLOW,       // 6
         RED,          // 7
-        WHITE         // 8 (assuming you meant to add this)
+        WHITE         // 8
     };
 
     // Select the pixel array based on type
@@ -764,6 +783,9 @@ void LCD_DrawImage(uint16_t startX, uint16_t startY, uint8_t scale, uint8_t type
             break;
         case 3:
             pixelArray = pixel_array_space_invader;
+            break;
+        case 4:
+            pixelArray = pixel_array_pong; // Add Pong array
             break;
         default:
             pixelArray = pixel_array_snake;  // Fallback

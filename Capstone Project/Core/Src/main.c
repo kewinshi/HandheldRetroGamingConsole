@@ -122,6 +122,7 @@ int main(void)
   srand(time(NULL));
   displayStartup();
 //  play_pacman();
+//  play_pong();
 
 	// BUZZER TEST PROGRAM
 //	while (1) {
