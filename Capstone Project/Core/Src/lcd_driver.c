@@ -746,11 +746,11 @@ void LCD_DrawImage(uint16_t startX, uint16_t startY, uint8_t scale, uint8_t type
         RED,          // 4
         DARK_GREY,    // 5
         YELLOW,       // 6
-        RED,           // 7
-		WHITE
+        RED,          // 7
+        WHITE         // 8 (assuming you meant to add this)
     };
 
-    // Use a pointer to a 16x16 array of uint8_t
+    // Select the pixel array based on type
     uint8_t (*pixelArray)[16] = NULL;
     switch (type) {
         case 0:
@@ -762,7 +762,7 @@ void LCD_DrawImage(uint16_t startX, uint16_t startY, uint8_t scale, uint8_t type
         case 2:
             pixelArray = pixel_array_tetris;
             break;
-        case 3:  // Add Space Invaders
+        case 3:
             pixelArray = pixel_array_space_invader;
             break;
         default:
@@ -770,19 +770,37 @@ void LCD_DrawImage(uint16_t startX, uint16_t startY, uint8_t scale, uint8_t type
             break;
     }
 
-    // Iterate through the 16x16 pixel array and draw the image
+    // Calculate the total size of the scaled image
+    uint16_t scaledWidth = 16 * scale;
+    uint16_t scaledHeight = 16 * scale;
+    uint16_t bufferSize = scaledWidth * scaledHeight * 2; // 2 bytes per pixel (16-bit color)
+    uint8_t *buffer = (uint8_t *)malloc(bufferSize); // Dynamically allocate buffer
+
+    if (buffer == NULL) {
+        return; // Memory allocation failed, exit silently
+    }
+
+    // Fill the buffer with scaled pixel data
     for (int y = 0; y < 16; y++) {
         for (int x = 0; x < 16; x++) {
             uint8_t pixelValue = pixelArray[y][x];
             uint16_t color = colors[pixelValue];
-            // Draw a scaled block of pixels
+            // Scale each pixel into a block
             for (int dy = 0; dy < scale; dy++) {
                 for (int dx = 0; dx < scale; dx++) {
-                    LCD_Drawpixel(startX + x * scale + dx, startY + y * scale + dy, color);
+                    int index = ((y * scale + dy) * scaledWidth + (x * scale + dx)) * 2;
+                    buffer[index] = color >> 8;      // High byte
+                    buffer[index + 1] = color & 0xFF; // Low byte
                 }
             }
         }
     }
+
+    // Write the entire block to the LCD
+    LCD_WriteBlockWithOffset(startX, startY, scaledWidth, scaledHeight, buffer);
+
+    // Free the allocated buffer
+    free(buffer);
 }
 
 Star stars[NUM_STARS];
