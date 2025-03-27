@@ -4,11 +4,11 @@
 #define ROWS 32
 #define COLS 17
 
+#include "main.h"  // Include main.h for Point
+#include "lcd_driver.h"
+#include "input.h"
+
 // A simple structure to hold a coordinate.
-typedef struct {
-    int x;
-    int y;
-} Point;
 
 // Maximum snake segments (playable area).
 #define MAX_SNAKE_LENGTH ((ROWS - 2) * (COLS - 2))

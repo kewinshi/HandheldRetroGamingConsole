@@ -121,6 +121,7 @@ int main(void)
   // Initialize random seed only once
   srand(time(NULL));
   displayStartup();
+//  play_pacman();
 
 	// BUZZER TEST PROGRAM
 //	while (1) {

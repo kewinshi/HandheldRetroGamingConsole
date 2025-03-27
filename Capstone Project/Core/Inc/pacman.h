@@ -1,26 +1,30 @@
 #ifndef PACMAN_H
 #define PACMAN_H
 
+#include "main.h"  // Include main.h for Point
+#include "lcd_driver.h"
+#include "input.h"
 #include <stdint.h>
+#include <stdio.h>
 
-// Define colors (RGB565 for example)
-#define BG_COLOR        0x0000
-#define PACMAN_COLOR    0xFFE0
-#define WALL_COLOR      0x001F
-#define DOT_COLOR       0xFFFF
+// Game constants
+#define GRID_WIDTH 17    // 17 tiles wide
+#define GRID_HEIGHT 32   // 32 tiles tall
+#define TILE_SIZE 10     // 10x10 sprites
+#define PACMAN_SPEED 1
+#define GHOST_SPEED 1
 
-// Each cell is 8×8 pixels
-#define PACMAN_CELL_SIZE  8
 
-void play_pacman(int ROWS, int COLS);
+// Pac-Man sprite (10x10, 0 = black, 1 = yellow)
+extern const uint8_t pixel_array_pacman[10][10];
 
-void move_pacman(int ROWS, int COLS,
-                 int x[], int y[],
-                 int *head, int *tail,
-                 int *xdir, int *ydir,
-                 char map_pacman[ROWS][COLS]);
+// Ghost sprite (10x10, 0 = black, 1 = red)
+extern const uint8_t pixel_array_ghost[10][10];
 
-void draw_pacman_map(int ROWS, int COLS,
-                     char map_pacman[ROWS][COLS]);
+// Maze with wrapping tunnels (1 = wall, 0 = path/pellet, 2 = tunnel)
+extern uint8_t maze[GRID_HEIGHT][GRID_WIDTH];
 
-#endif // PACMAN_H
+// Function declaration
+void play_pacman(void);
+
+#endif /* PACMAN_H */

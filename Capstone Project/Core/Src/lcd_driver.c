@@ -515,7 +515,7 @@ void DrawSnakeBody(uint16_t x, uint16_t y, uint16_t color, int is_head, int xdir
 
 // Draw an apple as a filled circle (radius 5).
 void DrawApple(uint16_t cx, uint16_t cy, uint16_t color) {
-    int radius = 5;
+    int radius = 4;
     for (int dy = -radius; dy <= radius; dy++) {
         for (int dx = -radius; dx <= radius; dx++) {
             if ((dx * dx + dy * dy) <= (radius * radius)) {
@@ -716,19 +716,38 @@ uint8_t pixel_array_tetris[16][16] = {
 };
 
 
-
+// In space_invaders.c, after existing arrays
+static const uint8_t pixel_array_space_invader[16][16] = {
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // Padding row
+    {0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0},
+    {0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0},
+    {0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+    {0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1},
+    {0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1},
+    {0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0},
+    {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0},
+    {0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0},
+    {0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0},
+    {0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}  // Padding row
+};
 
 void LCD_DrawImage(uint16_t startX, uint16_t startY, uint8_t scale, uint8_t type) {
-    // Map pixel values (0-5) to corresponding colors
+    // Map pixel values (0-7) to corresponding colors
     uint16_t colors[] = {
         BLACK,        // 0
         LIGHT_GREEN,  // 1
-        LIGHT_GREEN,        // 2
-        LIGHT_GREEN,        // 3  // temp change from DARK_GREEN
+        LIGHT_GREEN,  // 2
+        LIGHT_GREEN,  // 3
         RED,          // 4
         DARK_GREY,    // 5
-        YELLOW,       // 6,
-		RED			  // 7
+        YELLOW,       // 6
+        RED,           // 7
+		WHITE
     };
 
     // Use a pointer to a 16x16 array of uint8_t
@@ -743,16 +762,18 @@ void LCD_DrawImage(uint16_t startX, uint16_t startY, uint8_t scale, uint8_t type
         case 2:
             pixelArray = pixel_array_tetris;
             break;
+        case 3:  // Add Space Invaders
+            pixelArray = pixel_array_space_invader;
+            break;
         default:
-            // Fallback if type is out of bounds
-            pixelArray = pixel_array_snake;
+            pixelArray = pixel_array_snake;  // Fallback
             break;
     }
 
     // Iterate through the 16x16 pixel array and draw the image
     for (int y = 0; y < 16; y++) {
         for (int x = 0; x < 16; x++) {
-            uint8_t pixelValue = pixelArray[y][x];  // Use the selected array
+            uint8_t pixelValue = pixelArray[y][x];
             uint16_t color = colors[pixelValue];
             // Draw a scaled block of pixels
             for (int dy = 0; dy < scale; dy++) {

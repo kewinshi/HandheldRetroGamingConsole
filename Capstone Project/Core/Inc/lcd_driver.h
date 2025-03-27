@@ -54,8 +54,9 @@ static const struct {
     {0, 59},      // Above "WELCOME"
     {59 + 23, 125}, // Between "WELCOME" and "Snake"
 	{150, 170}, // Between "Snake" and "Pac-Man"
-	{190, 200},   // Between "Pac-Man and Tetris"
-    {230, 319}    // Below "Tetris"
+	{190, 210},   // Between "Pac-Man and Tetris"
+    {230, 255},    // Between "Tetris" and Space Invaders"
+    {270,319} // Below "Space Invaders"
 };
 #define NUM_SAFE_ZONES (sizeof(safe_zones) / sizeof(safe_zones[0]))
 

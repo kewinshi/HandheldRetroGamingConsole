@@ -81,6 +81,10 @@ void Error_Handler(void);
 #define CS_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
+typedef struct {
+    int x, y;
+    int active;
+} Point;
 
 /* USER CODE END Private defines */
 
