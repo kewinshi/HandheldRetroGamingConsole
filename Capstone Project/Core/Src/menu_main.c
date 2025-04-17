@@ -7,15 +7,16 @@
 #include "pacman.h"
 #include "space_invaders.h"
 #include "pong.h"
+#include "buzzer_driver.h"
 
 #define LINE_HEIGHT 20
 
 void displayStartup() {
+	LCD_Init();
+	HAL_Delay(100);
     LCD_Clear(BLACK);
-    LCD_Init();
-    HAL_Delay(100);
     LCD_DrawAMLogo();
-    HAL_Delay(2000);
+    caneck_caneck();
 }
 
 void displayMenu() {
@@ -37,6 +38,7 @@ void displayMenu() {
 
     while (1) {
         if (input == 1) { /* Select button */
+        	buzz(50);
             if (game_choice == 0) {
                 play_snake();
                 break;
@@ -57,6 +59,7 @@ void displayMenu() {
 
         /* Navigation logic */
         if (input == 2) { /* Up button */
+        	buzz_low(15);
             if (game_choice != 0) {
                 prev_gamechoice = game_choice;
                 game_choice = (game_choice - 1) % 5;
@@ -65,6 +68,7 @@ void displayMenu() {
                 game_choice = 4;
             }
         } else if (input == 5) { /* Down button */
+        	buzz(20);
             prev_gamechoice = game_choice;
             game_choice = (game_choice + 1) % 5;
         }

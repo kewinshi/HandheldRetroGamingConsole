@@ -13,6 +13,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>  /* For sprintf() */
+#include "buzzer_driver.h"
 
 /* Global Tetris grid: 0 = empty, otherwise stores the color of the locked block */
 uint16_t tetris_grid[TETRIS_ROWS][TETRIS_COLS] = {0};
@@ -527,6 +528,7 @@ void lock_piece(Tetrimino *piece)
             }
         }
     }
+    buzz(30);
 }
 
 /* move_piece */

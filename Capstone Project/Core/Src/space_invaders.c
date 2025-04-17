@@ -1,4 +1,5 @@
 #include "space_invaders.h"
+#include "buzzer_driver.h"
 
 // Custom Space Invader alien pixel array (14x14, 0 = black, 1 = white)
 const uint8_t pixel_array_invader[14][14] = {
@@ -95,6 +96,7 @@ void play_space_invaders(void) {
 
         // Move bullet
         if (bullet.active) {
+        	buzz(10);
             bullet.y -= 10;
             if (bullet.y < 0) bullet.active = 0;
         }
@@ -117,6 +119,7 @@ void play_space_invaders(void) {
             if (leftmost_x <= 0 && alien_dx < 0) alien_dx = 1;
             if (rightmost_x >= 170 && alien_dx > 0) alien_dx = -1;  // Adjusted to 170
             // Move aliens
+            buzz(5);
             for (int r = 0; r < ALIEN_ROWS; r++) {
                 for (int c = 0; c < ALIEN_COLS; c++) {
                     if (aliens[r][c].active) {
@@ -132,6 +135,7 @@ void play_space_invaders(void) {
                 if (aliens[r][c].active && bullet.active &&
                     bullet.x >= aliens[r][c].x && bullet.x <= aliens[r][c].x + ALIEN_WIDTH &&
                     bullet.y <= aliens[r][c].y + ALIEN_WIDTH) {
+                	buzz(50);
                     aliens[r][c].active = 0;
                     bullet.active = 0;
                 }
@@ -183,6 +187,7 @@ void play_space_invaders(void) {
             }
         }
         if (active_aliens == 0) {
+        	buzz(500);
             LCD_DrawString(50, 100, "You Win!", WHITE, BLACK, 2);
             break;
         }

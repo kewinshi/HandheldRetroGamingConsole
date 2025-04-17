@@ -2,6 +2,7 @@
 #include "snake.h"
 #include "lcd_driver.h"
 #include "input.h"
+#include "buzzer_driver.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -77,6 +78,7 @@ void play_snake() {
 
         // Move the snake; if move_snake returns 0, game over.
         if (!move_snake(xdir, ydir, &apple_x, &apple_y)) {
+        	buzz(500);
             LCD_Clear(BLACK);
             if (snake_length > top_length) {
                 top_length = snake_length;
@@ -144,6 +146,7 @@ int move_snake(int xdir, int ydir, int *apple_x, int *apple_y) {
     // Shift the snake's segments.
     if (ate_apple) {
         // Increase the length: shift all segments one index back.
+    	buzz(30);
         for (int i = snake_length; i > 0; i--) {
             snake_body[i] = snake_body[i - 1];
         }

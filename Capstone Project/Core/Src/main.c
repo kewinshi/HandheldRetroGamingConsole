@@ -28,7 +28,6 @@
 #include "menu_main.h"
 #include "lcd_driver.h"
 #include "input.h"
-#include "buzzer_driver.h"
 
 /* USER CODE END Includes */
 

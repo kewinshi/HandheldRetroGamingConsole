@@ -13,6 +13,7 @@
 // Maximum snake segments (playable area).
 #define MAX_SNAKE_LENGTH ((ROWS - 2) * (COLS - 2))
 
+
 // Global snake body array and current length.
 extern Point snake_body[MAX_SNAKE_LENGTH];
 extern int snake_length;
