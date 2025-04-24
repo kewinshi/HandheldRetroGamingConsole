@@ -51,8 +51,9 @@ static const struct {
     uint16_t y_min;
     uint16_t y_max;
 } safe_zones[] = {
-    {0, 59},      // Above "WELCOME"
-    {59 + 23, 125}, // Between "WELCOME" and "Snake"
+    {0, 32},      // Above "WELCOME"
+    {32 + 32, 80}, // Between "WELCOME" and "Snake"
+	{11, 130},
 	{150, 170}, // Between "Snake" and "Pac-Man"
 	{190, 210},   // Between "Pac-Man and Tetris"
     {230, 255},    // Between "Tetris" and Space Invaders"

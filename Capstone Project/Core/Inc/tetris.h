@@ -26,6 +26,7 @@ typedef struct
     uint16_t color; /* Color of the Tetrimino */
 } Tetrimino;
 
+extern uint32_t top_score; // Add this line
 /* Global variable to track if a hard drop has been used */
 extern volatile int hard_drop_used;
 

@@ -3,14 +3,14 @@
 #include "main.h"           // Includes project-specific definitions (like LD2_GPIO_Port)
 
 int get_input(void) {
-	if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0) == GPIO_PIN_RESET) // back
-	{
-//		print("back");
-		return 1;
-	}
-	else if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1) == GPIO_PIN_RESET) // select
+	if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0) == GPIO_PIN_RESET) // select
 	{
 //		print("select");
+		return 1;
+	}
+	else if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1) == GPIO_PIN_RESET) // back
+	{
+//		print("back");
 		return 0;
 	}
 	else if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_2) == GPIO_PIN_RESET) // up

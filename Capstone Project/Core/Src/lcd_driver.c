@@ -755,8 +755,27 @@ static const uint8_t pixel_array_pong[16][16] = {
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
 
+static const uint8_t pixel_array_high_scores[16][16] = {
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 9, 9, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 9, 9, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+};
+
 void LCD_DrawImage(uint16_t startX, uint16_t startY, uint8_t scale, uint8_t type) {
-    // Map pixel values (0-8) to corresponding colors
+    // Map pixel values (0-9) to corresponding colors
     uint16_t colors[] = {
         BLACK,        // 0
         LIGHT_GREEN,  // 1
@@ -766,7 +785,8 @@ void LCD_DrawImage(uint16_t startX, uint16_t startY, uint8_t scale, uint8_t type
         DARK_GREY,    // 5
         YELLOW,       // 6
         RED,          // 7
-        WHITE         // 8
+        WHITE,        // 8
+        WHITE       // 9 (for High Scores '<' icon)
     };
 
     // Select the pixel array based on type
@@ -785,7 +805,10 @@ void LCD_DrawImage(uint16_t startX, uint16_t startY, uint8_t scale, uint8_t type
             pixelArray = pixel_array_space_invader;
             break;
         case 4:
-            pixelArray = pixel_array_pong; // Add Pong array
+            pixelArray = pixel_array_pong;
+            break;
+        case 5:
+            pixelArray = pixel_array_high_scores;
             break;
         default:
             pixelArray = pixel_array_snake;  // Fallback

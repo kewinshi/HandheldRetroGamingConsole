@@ -82,17 +82,17 @@ void play_snake() {
             LCD_Clear(BLACK);
             if (snake_length > top_length) {
                 top_length = snake_length;
-                LCD_DrawString(50, 3 * 20, "HIGH SCORE!", RED, BLACK, 2.5);
+                LCD_DrawString(50, 3 * 20, "HIGH SCORE!", RED, BLACK, 2);
             } else {
-                LCD_DrawString(50, 3 * 20, "Game Over.", WHITE, BLACK, 2.5);
+                LCD_DrawString(50, 3 * 20, "Game Over.", WHITE, BLACK, 2);
             }
 
             char score_str[20];
             char top_score_str[20];
             sprintf(top_score_str, "High Score:%d", top_length);
             sprintf(score_str, "Score:%d", snake_length);
-            LCD_DrawString(50, 5 * 20, score_str, WHITE, BLACK, 2);
-            LCD_DrawString(50, 7 * 20, top_score_str, WHITE, BLACK, 2);
+            LCD_DrawString(50, 5 * 20, score_str, WHITE, BLACK, 1);
+            LCD_DrawString(50, 7 * 20, top_score_str, WHITE, BLACK, 1);
             while (get_input() == INVALID_INPUT) {
                 HAL_Delay(100);
             }

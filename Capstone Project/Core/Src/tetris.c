@@ -23,7 +23,7 @@ volatile int hard_drop_used = 0;
 
 /* Global score variable */
 static uint32_t score = 0U;
-static uint32_t top_score = 0U;
+uint32_t top_score = 0U;
 
 /* Tetris shapes (7 pieces, 4 rotations, each 4x4) */
 int shapes[7][4][4][4] =
@@ -268,9 +268,9 @@ static void handle_game_over(void)
     char topScoreStr[20];
     sprintf(scoreStr, "Score: %lu", (unsigned long)score);
     sprintf(topScoreStr, "High Score: %lu", (unsigned long)top_score);
-    LCD_DrawString(50, 3 * 20, "Game Over.", WHITE, BLACK, 2.5);
-    LCD_DrawString(50, 5 * 20, scoreStr, WHITE, BLACK, 2.5);
-    LCD_DrawString(50, 7 * 20, topScoreStr, WHITE, BLACK, 2.5);
+    LCD_DrawString(50, 3 * 20, "Game Over.", WHITE, BLACK, 2);
+    LCD_DrawString(50, 5 * 20, scoreStr, WHITE, BLACK, 1);
+    LCD_DrawString(50, 7 * 20, topScoreStr, WHITE, BLACK, 1);
     while (get_input() == INVALID_INPUT) HAL_Delay(75);
 }
 
